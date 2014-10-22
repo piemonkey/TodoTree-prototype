@@ -21,8 +21,8 @@ public class Item {
         return complete;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public boolean toggleComplete() {
+        return complete = !complete;
     }
+
 }

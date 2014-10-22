@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
@@ -80,7 +82,25 @@ public class ToDoActivity extends Activity {
     void displayList() {
         ListView listView = (ListView) findViewById(R.id.item_list);
         listView.setAdapter(new ArrayAdapter<Item>(
-                getApplicationContext(), R.layout.list_item, list.getItems()));
+                getApplicationContext(), R.layout.list_item, list.getItems()) {
+            @Override
+            public View getView(final int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
+                }
+                TextView itemText = (TextView) convertView.findViewById(R.id.text_list_item);
+                itemText.setText(getItem(position).getName());
+                Button button = (Button) convertView.findViewById(R.id.button_list_button);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ((Button) view).setText(getItem(position).getName());
+                    }
+                });
+
+                return convertView;
+            }
+        });
     }
 
     void setUpNewItems() {
