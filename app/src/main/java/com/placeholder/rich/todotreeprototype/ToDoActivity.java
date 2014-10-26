@@ -1,6 +1,7 @@
 package com.placeholder.rich.todotreeprototype;
 
 import android.app.Activity;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,13 +89,24 @@ public class ToDoActivity extends Activity {
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
                 }
-                TextView itemText = (TextView) convertView.findViewById(R.id.text_list_item);
-                itemText.setText(getItem(position).getName());
+                final TextView itemText = (TextView) convertView.findViewById(R.id.text_list_item);
+                final Item item = getItem(position);
+                itemText.setText(item.getName());
+                if (item.isComplete()) {
+                    itemText.setPaintFlags(itemText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+                itemText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        item.toggleComplete();
+                        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+                    }
+                });
                 Button button = (Button) convertView.findViewById(R.id.button_list_button);
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        ((Button) view).setText(getItem(position).getName());
+                        ((Button) view).setText(item.getName());
                     }
                 });
 
