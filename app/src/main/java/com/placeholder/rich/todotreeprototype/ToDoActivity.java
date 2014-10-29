@@ -1,6 +1,10 @@
 package com.placeholder.rich.todotreeprototype;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.Menu;
@@ -26,7 +30,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ToDoActivity extends Activity {
 
@@ -46,6 +54,8 @@ public class ToDoActivity extends Activity {
 
         if (savedInstanceState != null) {
             listBreadcrumb = savedInstanceState.getStringArrayList(KEY_LIST_BREADCRUMB);
+        } else if (getIntent() != null) {
+            listBreadcrumb = getIntent().getStringArrayListExtra(KEY_LIST_BREADCRUMB);
         }
         if (listBreadcrumb == null) {
             listBreadcrumb = new ArrayList<String>();
@@ -79,39 +89,74 @@ public class ToDoActivity extends Activity {
     }
 
     private ListTree loadList(String currentList) {
-        ListTree list;
+        List<TodoTxtLine> lines = new ArrayList<TodoTxtLine>();
         try {
-            final String parent = currentList != null ? currentList : ROOT_PARENT_STRING;
             FileInputStream fis = openFileInput(FILENAME_TODO_TXT);
             InputStreamReader irs = new InputStreamReader(fis);
             BufferedReader todoTxt = new BufferedReader(irs);
             String todo = todoTxt.readLine();
-            List<Item> items = new ArrayList<Item>();
-            unusedLines = new ArrayList<TodoTxtLine>();
             while (todo != null) {
-                TodoTxtLine line = new TodoTxtLine(todo);
-                if (line.getParent().equals(parent)) {
-                    Item item = new Item(line.getName(), line.isComplete());
-                    items.add(item);
-                } else {
-                    unusedLines.add(line);
-                }
+                lines.add(new TodoTxtLine(todo));
                 todo = todoTxt.readLine();
             }
             todoTxt.close();
             irs.close();
             fis.close();
-            if (currentList == null) {
-                list = ListTree.rootList(items);
-            } else {
-                list = new ListTree(currentList, items);
-            }
         } catch (FileNotFoundException e) {
             //TODO
             throw new RuntimeException(e);
         } catch (IOException e) {
             //TODO
             throw new RuntimeException(e);
+        }
+        // Work out sub items
+        Map<String, Integer> subItemsCount = new HashMap<String, Integer>();
+        Map<String, Integer> itemsRemainCount = new HashMap<String, Integer>();
+        for (TodoTxtLine line : lines) {
+            String parent = line.getParent();
+            if (parent != null) {
+                if (subItemsCount.containsKey(parent)) {
+                    subItemsCount.put(parent, subItemsCount.get(parent) + 1);
+                    if (!line.isComplete()) {
+                        itemsRemainCount.put(parent, itemsRemainCount.get(parent) + 1);
+                    }
+                } else {
+                    subItemsCount.put(parent, 1);
+                    if (line.isComplete()) {
+                        itemsRemainCount.put(parent, 0);
+                    } else {
+                        itemsRemainCount.put(parent, 1);
+                    }
+                }
+            }
+        }
+        final String parent = currentList != null ? currentList : ROOT_PARENT_STRING;
+        List<Item> items = new ArrayList<Item>();
+        Set<String> itemNames = new HashSet<String>();
+        unusedLines = new ArrayList<TodoTxtLine>();
+        for (TodoTxtLine line : lines) {
+            if (line.getParent().equals(parent)) {
+                String name = line.getName();
+                final Item item;
+                if (subItemsCount.containsKey(name)) {
+                    item = new Item(name,
+                            line.isComplete(),
+                            subItemsCount.get(name),
+                            itemsRemainCount.get(name));
+                } else {
+                    item = new Item(name, line.isComplete());
+                }
+                items.add(item);
+                itemNames.add(name);
+            } else {
+                unusedLines.add(line);
+            }
+        }
+        final ListTree list;
+        if (currentList == null) {
+            list = ListTree.rootList(items);
+        } else {
+            list = new ListTree(currentList, items);
         }
         return list;
     }
@@ -208,11 +253,11 @@ public class ToDoActivity extends Activity {
     }
 
     void displayList() {
-        ListView listView = (ListView) findViewById(R.id.item_list);
+        final ListView listView = (ListView) findViewById(R.id.item_list);
         listView.setAdapter(new ArrayAdapter<Item>(
                 getApplicationContext(), R.layout.list_item, list.getItems()) {
             @Override
-            public View getView(final int position, View convertView, ViewGroup parent) {
+            public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
                 }
@@ -230,11 +275,43 @@ public class ToDoActivity extends Activity {
                         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
                     }
                 });
-                Button button = (Button) convertView.findViewById(R.id.button_list_button);
+                Button button = (Button) convertView.findViewById(R.id.button_list_sublist);
+                if (item.hasSubItems()) {
+                    itemText.setText(itemText.getText() + " (" + item.getNItemsLeft() + "/"
+                            + item.getNSubItems() + ")");
+//                } else {
+//                    button.setText(button.getText() + "+");
+                }
                 button.setOnClickListener(new View.OnClickListener() {
+                    private EditText newItemName;
+
                     @Override
-                    public void onClick(View view) {
-                        ((Button) view).setText(item.getName());
+                    public void onClick(final View view) {
+                        if (item.hasSubItems()) {
+                            openActivityForList(item, getContext());
+                        } else {
+                            AlertDialog.Builder newSubItemBuilder =
+                                    new AlertDialog.Builder(listView.getContext());
+                            newSubItemBuilder.setPositiveButton
+                                    ("Done", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            TodoTxtLine newTodo = new TodoTxtLine(
+                                                    newItemName.getText().toString(),
+                                                    item.getName(),
+                                                    false);
+                                            unusedLines.add(newTodo);
+                                            item.setNItemsLeft(1);
+                                            item.setNSubItems(1);
+                                            saveList(list, unusedLines);
+                                            openActivityForList(item, getContext());
+                                        }
+                                    });
+                            newSubItemBuilder.setView(getLayoutInflater().inflate(
+                                    R.layout.dialog_new_sub_item, null));
+                            AlertDialog newSubItem = newSubItemBuilder.show();
+                            newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_new_sub);
+                        }
                     }
                 });
 
@@ -243,7 +320,15 @@ public class ToDoActivity extends Activity {
         });
     }
 
-    void setUpNewItems() {
+    private void openActivityForList(Item item, Context context) {
+        Intent intent = new Intent(context, ToDoActivity.class);
+        ArrayList<String> nextBreadcrumb = new ArrayList<String>(listBreadcrumb);
+        nextBreadcrumb.add(item.getName());
+        intent.putStringArrayListExtra(KEY_LIST_BREADCRUMB, nextBreadcrumb);
+        startActivity(intent);
+    }
+
+    private void setUpNewItems() {
         final EditText itemText = (EditText) findViewById(R.id.new_item_text);
         Button addItem = (Button) findViewById(R.id.add_button);
         addItem.setOnClickListener(new View.OnClickListener() {

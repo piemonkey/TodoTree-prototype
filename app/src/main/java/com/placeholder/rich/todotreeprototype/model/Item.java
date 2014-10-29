@@ -37,8 +37,16 @@ public class Item {
         return nSubItems;
     }
 
+    public void setNSubItems(int nSubItems) {
+        this.nSubItems = nSubItems;
+    }
+
     public int getNItemsLeft() {
         return nItemsLeft;
+    }
+
+    public void setNItemsLeft(int nItemsLeft) {
+        this.nItemsLeft = nItemsLeft;
     }
 
     public boolean hasSubItems() {
