@@ -16,25 +16,48 @@ import android.widget.TextView;
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ToDoActivity extends Activity {
 
-    private static final String KEY_CURRENT_LIST = "CurrentList";
-    private static final String KEY_PARENT_ITEM = "ParentItem";
-    private static final String KEY_HACK_ROOT_NAME = "RootName";
-    private static final String KEY_HACK_NAME_PRE = "HackName-";
-    private static final String KEY_HACK_COMPLETE_PRE = "HackComplete-";
+    private static final String FILENAME_TODO_TXT = "todo.txt";
 
-    private Bundle savedState;
+    private static final String KEY_LIST_BREADCRUMB = "ListBreadcrumb";
+
+    private static final String ROOT_PARENT_STRING = "¬ROOT¬";
+
     private ListTree list;
+    private ArrayList<String> listBreadcrumb;
+    private ArrayList<TodoTxtLine> unusedLines;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        savedState = savedInstanceState;
+
+        if (savedInstanceState == null) {
+            listBreadcrumb = null;
+        } else {
+            listBreadcrumb = savedInstanceState.getStringArrayList(KEY_LIST_BREADCRUMB);
+        }
+        if (listBreadcrumb == null) {
+            listBreadcrumb = new ArrayList<String>();
+            try {
+                openFileOutput(FILENAME_TODO_TXT, MODE_PRIVATE);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         setContentView(R.layout.activity_to_do);
     }
 
@@ -43,41 +66,150 @@ public class ToDoActivity extends Activity {
         super.onStart();
 
         final String currentList;
-        if (savedState == null) {
-            list = ListTree.rootList(Arrays.asList(new Item("Item 1"), new Item("Item 2")));
+        int size = listBreadcrumb.size();
+        if (size > 0) {
+            currentList = listBreadcrumb.get(size - 1);
         } else {
-            if (savedState.containsKey(KEY_CURRENT_LIST)) {
-                currentList = savedState.getString(KEY_CURRENT_LIST);
-            } else {
-                savedState.putString(KEY_CURRENT_LIST, KEY_HACK_ROOT_NAME);
-                currentList = KEY_HACK_ROOT_NAME;
-            }
-            list = loadList(savedState, currentList);
+            currentList = null;
         }
+        list = loadList(currentList);
         displayList();
         setUpNewItems();
     }
 
-    private ListTree loadList(Bundle savedState, String currentList) {
-        final String nameKeyStub = KEY_HACK_NAME_PRE + currentList;
-        final String completeKeyStub = KEY_HACK_COMPLETE_PRE + currentList;
-        int i = 0;
-        String nameKey = nameKeyStub + i;
-        String completeKey = completeKeyStub + i;
-        List<Item> items = new ArrayList<Item>();
-        while (savedState.containsKey(nameKey)) {
-            items.add(new Item(savedState.getString(nameKey), savedState.getBoolean(completeKey)));
-            i++;
-            nameKey = nameKeyStub + i;
-            completeKey = completeKeyStub + i;
-        }
+    @Override
+    protected void onPause() {
+        saveList(list, unusedLines);
+        super.onPause();
+    }
+
+    private ListTree loadList(String currentList) {
         ListTree list;
-        if (savedState.containsKey(KEY_PARENT_ITEM)) {
-            list = new ListTree(currentList, new Item(savedState.getString(KEY_PARENT_ITEM)), items);
-        } else {
-            list = ListTree.rootList(items);
+        try {
+            final String parent = currentList != null ? currentList : ROOT_PARENT_STRING;
+            FileInputStream fis = openFileInput(FILENAME_TODO_TXT);
+            InputStreamReader irs = new InputStreamReader(fis);
+            BufferedReader todoTxt = new BufferedReader(irs);
+            String todo = todoTxt.readLine();
+            List<Item> items = new ArrayList<Item>();
+            unusedLines = new ArrayList<TodoTxtLine>();
+            while (todo != null) {
+                TodoTxtLine line = new TodoTxtLine(todo);
+                if (line.getParent().equals(parent)) {
+                    Item item = new Item(line.getName(), line.isComplete());
+                    items.add(item);
+                } else {
+                    unusedLines.add(line);
+                }
+                todo = todoTxt.readLine();
+            }
+            todoTxt.close();
+            irs.close();
+            fis.close();
+            if (currentList == null) {
+                list = ListTree.rootList(items);
+            } else {
+                list = new ListTree(currentList, items);
+            }
+        } catch (FileNotFoundException e) {
+            //TODO
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            //TODO
+            throw new RuntimeException(e);
         }
         return list;
+    }
+
+    private void saveList(ListTree currentSave, List<TodoTxtLine> unused) {
+        ArrayList<TodoTxtLine> usedLines = new ArrayList<TodoTxtLine>(currentSave.getItems().size());
+        final String parent;
+        if (currentSave.isRoot()) {
+            parent = ROOT_PARENT_STRING;
+        } else {
+            parent = currentSave.getName();
+        }
+        for (Item item : currentSave.getItems()) {
+            usedLines.add(new TodoTxtLine(item.getName(), parent, item.isComplete()));
+        }
+        try {
+            FileOutputStream os = openFileOutput(FILENAME_TODO_TXT, MODE_PRIVATE);
+            OutputStreamWriter osw = new OutputStreamWriter(os);
+            BufferedWriter bw = new BufferedWriter(osw);
+            for (TodoTxtLine line : usedLines) {
+                bw.append(line.toLine());
+                bw.newLine();
+            }
+            for (TodoTxtLine line : unused) {
+                bw.append(line.toLine());
+                bw.newLine();
+            }
+            bw.close();
+            osw.close();
+            os.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private class TodoTxtLine {
+        private final String parent;
+        private final String name;
+        private final boolean complete;
+
+        TodoTxtLine(String line) {
+            line = line.trim();
+            if (line.charAt(0) == 'x' && line.charAt(1) == ' ') {
+                complete = true;
+                line = line.substring(2);
+                //For full support deal with completion date
+            } else {
+                complete = false;
+                //For full support deal with priority
+            }
+            //For full support deal with creation date
+            //For full support deal with contexts
+            //For full support deal with flexible ordering
+            String[] chunks = line.split(" \\+");
+            name = chunks[0];
+            if (chunks.length > 1) {
+                parent = chunks[1].replace("|¬", " ");
+            } else {
+                parent = null;
+            }
+        }
+
+        TodoTxtLine(String name, String parent, boolean complete) {
+            this.name = name;
+            this.parent = parent.replace(" ", "|¬");
+            this.complete = complete;
+        }
+
+        public String getParent() {
+            return parent;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isComplete() {
+            return complete;
+        }
+
+        public String toLine() {
+            StringBuilder sb = new StringBuilder();
+            if (complete) {
+                sb.append("x ");
+            }
+            sb.append(name);
+            if (parent != null) {
+                sb.append(" +").append(parent);
+            }
+            return sb.toString();
+        }
     }
 
     void displayList() {
@@ -128,46 +260,9 @@ public class ToDoActivity extends Activity {
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        savedState = savedInstanceState;
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (savedState == null) {
-            savedState = new Bundle();
-        }
-        saveList(savedState);
-
-        outState.putAll(savedState);
+        outState.putStringArrayList(KEY_LIST_BREADCRUMB, listBreadcrumb);
         super.onSaveInstanceState(outState);
-    }
-
-    private void saveList(Bundle saveBundle) {
-        final String currentList;
-        if (list.isRoot()) {
-            currentList = KEY_HACK_ROOT_NAME;
-            saveBundle.remove(KEY_PARENT_ITEM);
-        } else {
-            currentList = list.getName();
-            saveBundle.putString(KEY_PARENT_ITEM, list.getParent().getName());
-        }
-        saveBundle.putString(KEY_CURRENT_LIST, currentList);
-
-        final String nameKeyStub = KEY_HACK_NAME_PRE + currentList;
-        final String completeKeyStub = KEY_HACK_COMPLETE_PRE + currentList;
-        String nameKey;
-        String completeKey;
-        Item item;
-        List<Item> items = list.getItems();
-        for (int i = 0; i < items.size(); i++) {
-            nameKey = nameKeyStub + i;
-            completeKey = completeKeyStub + i;
-            item = items.get(i);
-            saveBundle.putString(nameKey, item.getName());
-            saveBundle.putBoolean(completeKey, item.isComplete());
-        }
     }
 
     @Override

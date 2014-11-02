@@ -7,16 +7,14 @@ import java.util.List;
 public class ListTree {
     private final String name;
     private final List<Item> items;
-    private final Item parent;
 
-    public ListTree(String name, Item parent, List<Item> items) {
+    public ListTree(String name, List<Item> items) {
         this.name = name;
-        this.parent = parent;
         this.items = new ArrayList<Item>(items);
     }
 
     public static ListTree rootList(List<Item> items) {
-        return new ListTree(null, null, items);
+        return new ListTree(null, items);
     }
 
     public List<Item> getItems() {
@@ -31,11 +29,7 @@ public class ListTree {
         return name;
     }
 
-    public Item getParent() {
-        return parent;
-    }
-
     public boolean isRoot() {
-        return parent == null;
+        return name == null;
     }
 }
