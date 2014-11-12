@@ -18,6 +18,7 @@ import com.placeholder.rich.todotreeprototype.model.ListTree;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ToDoActivity extends Activity {
@@ -44,13 +44,14 @@ public class ToDoActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState == null) {
-            listBreadcrumb = null;
-        } else {
+        if (savedInstanceState != null) {
             listBreadcrumb = savedInstanceState.getStringArrayList(KEY_LIST_BREADCRUMB);
         }
         if (listBreadcrumb == null) {
             listBreadcrumb = new ArrayList<String>();
+        }
+        File saveFile = getFileStreamPath(FILENAME_TODO_TXT);
+        if (!saveFile.exists()) {
             try {
                 openFileOutput(FILENAME_TODO_TXT, MODE_PRIVATE);
             } catch (FileNotFoundException e) {
@@ -75,12 +76,6 @@ public class ToDoActivity extends Activity {
         list = loadList(currentList);
         displayList();
         setUpNewItems();
-    }
-
-    @Override
-    protected void onPause() {
-        saveList(list, unusedLines);
-        super.onPause();
     }
 
     private ListTree loadList(String currentList) {
@@ -231,6 +226,7 @@ public class ToDoActivity extends Activity {
                     @Override
                     public void onClick(View view) {
                         item.toggleComplete();
+                        saveList(list, unusedLines);
                         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
                     }
                 });
@@ -255,6 +251,7 @@ public class ToDoActivity extends Activity {
             public void onClick(View view) {
                 list.addItem(new Item(itemText.getText().toString()));
                 itemText.getText().clear();
+                saveList(list, unusedLines);
             }
         });
     }
