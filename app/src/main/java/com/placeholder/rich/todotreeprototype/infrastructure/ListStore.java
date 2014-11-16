@@ -16,14 +16,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 public class ListStore {
 
     private static final String ROOT_PARENT_STRING = "¬ROOT¬";
+    private static final String ID_TAG = " id:";
+    private static final String PARENT_TAG = " parent:";
     private static final String FILENAME_TODO_TXT = "todo.txt";
 
     private ArrayList<TodoTxtLine> unusedLines = new ArrayList<TodoTxtLine>();
@@ -34,7 +35,7 @@ public class ListStore {
         File saveFile = context.getFileStreamPath(FILENAME_TODO_TXT);
         if (!saveFile.exists()) {
             try {
-                context.openFileOutput(FILENAME_TODO_TXT, context.MODE_PRIVATE);
+                context.openFileOutput(FILENAME_TODO_TXT, Context.MODE_PRIVATE);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -50,10 +51,11 @@ public class ListStore {
             parent = currentSave.getName();
         }
         for (Item item : currentSave.getItems()) {
-            usedLines.add(new TodoTxtLine(item.getName(), parent, item.isComplete()));
+            usedLines.add(new TodoTxtLine
+                    (item.getId(), item.getName(), item.isComplete(), currentSave.getId(), parent));
         }
         try {
-            FileOutputStream os = context.openFileOutput(FILENAME_TODO_TXT, context.MODE_PRIVATE);
+            FileOutputStream os = context.openFileOutput(FILENAME_TODO_TXT, Context.MODE_PRIVATE);
             OutputStreamWriter osw = new OutputStreamWriter(os);
             BufferedWriter bw = new BufferedWriter(osw);
             for (TodoTxtLine line : usedLines) {
@@ -74,7 +76,45 @@ public class ListStore {
         }
     }
 
-    public ListTree load(String currentList) {
+    public ListTree load(final UUID currentId) {
+        List<TodoTxtLine> lines = getLinesFromFile();
+
+        Item current = null;
+        Map<UUID, Integer> subItemsCount = new HashMap<UUID, Integer>();
+        Map<UUID, Integer> itemsRemainCount = new HashMap<UUID, Integer>();
+        for (TodoTxtLine line : lines) {
+            if (currentId.equals(line.getId())) {
+                current = line.toItem();
+            } else {
+                incrementCounts(subItemsCount, itemsRemainCount, line);
+            }
+        }
+        List<Item> items = new ArrayList<Item>();
+        unusedLines = new ArrayList<TodoTxtLine>();
+        fillItemsAndUnusedLines
+                (currentId, lines, subItemsCount, itemsRemainCount, items, unusedLines);
+
+        return new ListTree(currentId, current.getName(), items);
+    }
+
+    public ListTree loadRoot() {
+        List<TodoTxtLine> lines = getLinesFromFile();
+
+        Map<UUID, Integer> subItemsCount = new HashMap<UUID, Integer>();
+        Map<UUID, Integer> itemsRemainCount = new HashMap<UUID, Integer>();
+        for (TodoTxtLine line : lines) {
+            incrementCounts(subItemsCount, itemsRemainCount, line);
+        }
+
+        List<Item> items = new ArrayList<Item>();
+        unusedLines = new ArrayList<TodoTxtLine>();
+        fillItemsAndUnusedLines
+                (ListTree.getRootId(), lines, subItemsCount, itemsRemainCount, items, unusedLines);
+
+        return new ListTree(ListTree.getRootId(), null, items);
+    }
+
+    private List<TodoTxtLine> getLinesFromFile() {
         List<TodoTxtLine> lines = new ArrayList<TodoTxtLine>();
         try {
             FileInputStream fis = context.openFileInput(FILENAME_TODO_TXT);
@@ -89,72 +129,64 @@ public class ListStore {
             irs.close();
             fis.close();
         } catch (FileNotFoundException e) {
-            //TODO
             throw new RuntimeException(e);
         } catch (IOException e) {
-            //TODO
             throw new RuntimeException(e);
         }
-        // Work out sub items
-        Map<String, Integer> subItemsCount = new HashMap<String, Integer>();
-        Map<String, Integer> itemsRemainCount = new HashMap<String, Integer>();
-        for (TodoTxtLine line : lines) {
-            String parent = line.getParent();
-            if (parent != null) {
-                if (subItemsCount.containsKey(parent)) {
-                    subItemsCount.put(parent, subItemsCount.get(parent) + 1);
-                    if (!line.isComplete()) {
-                        itemsRemainCount.put(parent, itemsRemainCount.get(parent) + 1);
-                    }
-                } else {
-                    subItemsCount.put(parent, 1);
-                    if (line.isComplete()) {
-                        itemsRemainCount.put(parent, 0);
-                    } else {
-                        itemsRemainCount.put(parent, 1);
-                    }
-                }
-            }
-        }
-        final String parent = currentList != null ? currentList : ROOT_PARENT_STRING;
-        List<Item> items = new ArrayList<Item>();
-        Set<String> itemNames = new HashSet<String>();
-        unusedLines = new ArrayList<TodoTxtLine>();
-        for (TodoTxtLine line : lines) {
-            if (line.getParent().equals(parent)) {
-                String name = line.getName();
-                final Item item;
-                if (subItemsCount.containsKey(name)) {
-                    item = new Item(name,
-                            line.isComplete(),
-                            subItemsCount.get(name),
-                            itemsRemainCount.get(name));
-                } else {
-                    item = new Item(name, line.isComplete());
-                }
-                items.add(item);
-                itemNames.add(name);
-            } else {
-                unusedLines.add(line);
-            }
-        }
-        final ListTree list;
-        if (currentList == null) {
-            list = ListTree.rootList(items);
-        } else {
-            list = new ListTree(currentList, items);
-        }
-        return list;
+        return lines;
     }
 
-    public void addEntry(String name, boolean completed, String parent) {
-        unusedLines.add(new TodoTxtLine(name, parent, completed));
+    private void incrementCounts(Map<UUID, Integer> subItemsCount,
+                                 Map<UUID, Integer> itemsRemainCount,
+                                 TodoTxtLine line) {
+        UUID parentId = line.parentId;
+        if (subItemsCount.containsKey(parentId)) {
+            subItemsCount.put(parentId, subItemsCount.get(parentId) + 1);
+            if (!line.isComplete()) {
+                itemsRemainCount.put(parentId, itemsRemainCount.get(parentId) + 1);
+            }
+        } else {
+            subItemsCount.put(parentId, 1);
+            if (line.isComplete()) {
+                itemsRemainCount.put(parentId, 0);
+            } else {
+                itemsRemainCount.put(parentId, 1);
+            }
+        }
+    }
+
+    private void fillItemsAndUnusedLines(UUID currentId,
+                                         List<TodoTxtLine> lines,
+                                         Map<UUID, Integer> subItemsCount,
+                                         Map<UUID, Integer> itemsRemainCount,
+                                         List<Item> items,
+                                         List<TodoTxtLine> unused) {
+        for (TodoTxtLine line : lines) {
+            if (line.hasParent(currentId)) {
+                UUID id = line.getId();
+                final Item item;
+                if (subItemsCount.containsKey(id)) {
+                    item = line.toItem(subItemsCount.get(id), itemsRemainCount.get(id));
+                } else {
+                    item = line.toItem();
+                }
+                items.add(item);
+            } else {
+                unused.add(line);
+            }
+        }
+    }
+
+    public void addEntry(String name, boolean completed, UUID parentId, String parent) {
+        unusedLines.add(new TodoTxtLine(UUID.randomUUID(), name, completed, parentId, parent));
     }
 
     private class TodoTxtLine {
-        private final String parent;
+        private final UUID id;
         private final String name;
         private final boolean complete;
+        private final UUID parentId;
+        private final String parent;
 
         TodoTxtLine(String line) {
             line = line.trim();
@@ -169,6 +201,12 @@ public class ListStore {
             //For full support deal with creation date
             //For full support deal with contexts
             //For full support deal with flexible ordering
+            String[] parts = line.split(ID_TAG);
+            line = parts[0];
+            String[] idParts = parts[1].split(PARENT_TAG);
+            id = UUID.fromString(idParts[0]);
+            parentId = UUID.fromString(idParts[1]);
+
             String[] chunks = line.split(" \\+");
             name = chunks[0];
             if (chunks.length > 1) {
@@ -178,22 +216,32 @@ public class ListStore {
             }
         }
 
-        TodoTxtLine(String name, String parent, boolean complete) {
-            this.name = name;
-            this.parent = parent.replace(" ", "|¬");
+        TodoTxtLine(UUID id, String name, boolean complete, UUID parentId, String parent) {
+            this.id = id;
             this.complete = complete;
+            this.name = name;
+            this.parentId = parentId;
+            this.parent = parent.replace(" ", "|¬");
         }
 
-        public String getParent() {
-            return parent;
-        }
-
-        public String getName() {
-            return name;
+        public UUID getId() {
+            return id;
         }
 
         public boolean isComplete() {
             return complete;
+        }
+
+        public boolean hasParent(UUID parentId) {
+            return this.parentId.equals(parentId);
+        }
+
+        public Item toItem() {
+            return new Item(id, name, complete);
+        }
+
+        public Item toItem(int subItemsCount, int itemsRemainCount) {
+            return new Item(id, name, complete, subItemsCount, itemsRemainCount);
         }
 
         public String toLine() {
@@ -205,6 +253,10 @@ public class ListStore {
             if (parent != null) {
                 sb.append(" +").append(parent);
             }
+            sb.append(ID_TAG);
+            sb.append(id);
+            sb.append(PARENT_TAG);
+            sb.append(parentId);
             return sb.toString();
         }
     }

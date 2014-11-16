@@ -22,6 +22,7 @@ import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ToDoActivity extends Activity {
 
@@ -30,19 +31,25 @@ public class ToDoActivity extends Activity {
     private ListStore listStore;
 
     private ListTree list;
-    private ArrayList<String> listBreadcrumb;
+    private ArrayList<UUID> listBreadcrumb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        String[] idStrings = null;
         if (savedInstanceState != null) {
-            listBreadcrumb = savedInstanceState.getStringArrayList(KEY_LIST_BREADCRUMB);
+            idStrings = savedInstanceState.getStringArray(KEY_LIST_BREADCRUMB);
         } else if (getIntent() != null) {
-            listBreadcrumb = getIntent().getStringArrayListExtra(KEY_LIST_BREADCRUMB);
+            idStrings = getIntent().getStringArrayExtra(KEY_LIST_BREADCRUMB);
         }
-        if (listBreadcrumb == null) {
-            listBreadcrumb = new ArrayList<String>();
+        if (idStrings != null) {
+            listBreadcrumb = new ArrayList<UUID>(idStrings.length);
+            for (String idString : idStrings) {
+                listBreadcrumb.add(UUID.fromString(idString));
+            }
+        } else {
+            listBreadcrumb = new ArrayList<UUID>();
         }
         listStore = new ListStore(this);
 
@@ -53,14 +60,13 @@ public class ToDoActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
-        final String currentList;
         int size = listBreadcrumb.size();
         if (size > 0) {
-            currentList = listBreadcrumb.get(size - 1);
+            final UUID currentId = listBreadcrumb.get(size - 1);
+            list = listStore.load(currentId);
         } else {
-            currentList = null;
+            list = listStore.loadRoot();
         }
-        list = listStore.load(currentList);
         displayList();
         setUpNewItems();
     }
@@ -110,7 +116,7 @@ public class ToDoActivity extends Activity {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             listStore.addEntry(newItemName.getText().toString(),
-                                                    false, item.getName());
+                                                    false, item.getId(), item.getName());
                                             item.setNItemsLeft(1);
                                             item.setNSubItems(1);
                                             listStore.save(list);
@@ -132,9 +138,13 @@ public class ToDoActivity extends Activity {
 
     private void openActivityForList(Item item, Context context) {
         Intent intent = new Intent(context, ToDoActivity.class);
-        ArrayList<String> nextBreadcrumb = new ArrayList<String>(listBreadcrumb);
-        nextBreadcrumb.add(item.getName());
-        intent.putStringArrayListExtra(KEY_LIST_BREADCRUMB, nextBreadcrumb);
+        int numberOfCrumbs = listBreadcrumb.size();
+        String[] nextCrumbs = new String[numberOfCrumbs + 1];
+        for (int i = 0; i < numberOfCrumbs; i++) {
+            nextCrumbs[i] = listBreadcrumb.get(i).toString();
+        }
+        nextCrumbs[numberOfCrumbs] = item.getId().toString();
+        intent.putExtra(KEY_LIST_BREADCRUMB, nextCrumbs);
         startActivity(intent);
     }
 
@@ -153,7 +163,12 @@ public class ToDoActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putStringArrayList(KEY_LIST_BREADCRUMB, listBreadcrumb);
+        int numberOfCrumbs = listBreadcrumb.size();
+        String[] crumbs = new String[numberOfCrumbs];
+        for (int i = 0; i < numberOfCrumbs; i++) {
+            crumbs[i] = listBreadcrumb.get(i).toString();
+        }
+        outState.putStringArray(KEY_LIST_BREADCRUMB, crumbs);
         super.onSaveInstanceState(outState);
     }
 
