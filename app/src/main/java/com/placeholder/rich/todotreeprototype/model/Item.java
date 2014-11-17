@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class Item {
     private final UUID id;
-    private final String name;
+    private String name;
     private boolean complete;
     private int nSubItems;
     private int nItemsLeft;
@@ -31,6 +31,10 @@ public class Item {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isComplete() {

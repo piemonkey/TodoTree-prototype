@@ -7,10 +7,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -124,10 +126,44 @@ public class ToDoActivity extends Activity {
                                         }
                                     });
                             newSubItemBuilder.setView(getLayoutInflater().inflate(
-                                    R.layout.dialog_new_sub_item, null));
+                                    R.layout.dialog_new_sub_item, listView, false));
                             AlertDialog newSubItem = newSubItemBuilder.show();
                             newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_new_sub);
                         }
+                    }
+                });
+
+                convertView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                    private EditText newName;
+
+                    @Override
+                    public void onCreateContextMenu(ContextMenu menu,
+                                                    View view,
+                                                    ContextMenu.ContextMenuInfo info) {
+                        menu.setHeaderTitle(item.getName());
+                        menu.add("edit").setOnMenuItemClickListener(
+                                new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                AlertDialog.Builder itemEditBuilder =
+                                        new AlertDialog.Builder(listView.getContext());
+                                itemEditBuilder.setPositiveButton
+                                        ("Done", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                item.setName(newName.getText().toString());
+                                                listStore.save(list);
+                                                displayList();
+                                            }
+                                        });
+                                itemEditBuilder.setView(getLayoutInflater().inflate(
+                                        R.layout.dialog_new_sub_item, listView, false));
+                                AlertDialog newSubItem = itemEditBuilder.show();
+                                newName = (EditText) newSubItem.findViewById(R.id.edit_text_new_sub);
+
+                                return true;
+                            }
+                        });
                     }
                 });
 
