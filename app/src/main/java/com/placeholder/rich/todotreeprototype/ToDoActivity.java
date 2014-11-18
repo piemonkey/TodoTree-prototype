@@ -158,6 +158,15 @@ public class ToDoActivity extends Activity {
                                 return true;
                             }
                         });
+                        menu.add("delete").setOnMenuItemClickListener(
+                                new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                onMenuItemClickTodoDelete();
+
+                                return true;
+                            }
+                        });
                     }
 
                     private void onMenuItemClickTodoEdit() {
@@ -177,6 +186,22 @@ public class ToDoActivity extends Activity {
                         AlertDialog newSubItem = itemEditBuilder.show();
                         newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
                         newName.setHint("New name...");
+                    }
+
+                    private void onMenuItemClickTodoDelete() {
+                        AlertDialog.Builder itemDeleteBuilder =
+                                new AlertDialog.Builder(listView.getContext());
+                        itemDeleteBuilder.setTitle(item.getName());
+                        itemDeleteBuilder.setMessage("Are you sure you want to delete?");
+                        itemDeleteBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                list.deleteItem(item);
+                                listStore.save(list);
+                                displayList();
+                            }
+                        });
+                        itemDeleteBuilder.show();
                     }
                 });
 

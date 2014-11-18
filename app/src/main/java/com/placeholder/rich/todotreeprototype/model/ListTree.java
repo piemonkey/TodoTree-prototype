@@ -39,6 +39,10 @@ public class ListTree {
         items.add(newItem);
     }
 
+    public void deleteItem(Item toDelete) {
+        items.remove(toDelete);
+    }
+
     public UUID getId() {
         return id;
     }
