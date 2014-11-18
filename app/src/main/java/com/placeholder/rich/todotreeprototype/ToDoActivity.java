@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
+import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -121,7 +122,7 @@ public class ToDoActivity extends Activity {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             listStore.addEntry(newItemName.getText().toString(),
-                                                    false, item.getId(), item.getName());
+                                                    false, When.NA, item.getId(), item.getName());
                                             item.setNItemsLeft(1);
                                             item.setNSubItems(1);
                                             listStore.save(list);

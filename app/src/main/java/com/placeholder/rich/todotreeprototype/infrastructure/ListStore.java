@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
+import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,6 +26,7 @@ public class ListStore {
     private static final String ROOT_PARENT_STRING = "¬ROOT¬";
     private static final String ID_TAG = " id:";
     private static final String PARENT_TAG = " parent:";
+    private static final String WHEN_TAG = " when:";
     private static final String FILENAME_TODO_TXT = "todo.txt";
 
     private ArrayList<TodoTxtLine> unusedLines = new ArrayList<TodoTxtLine>();
@@ -51,8 +53,8 @@ public class ListStore {
             parent = currentSave.getName();
         }
         for (Item item : currentSave.getItems()) {
-            usedLines.add(new TodoTxtLine
-                    (item.getId(), item.getName(), item.isComplete(), currentSave.getId(), parent));
+            usedLines.add(new TodoTxtLine(item.getId(), item.getName(), item.isComplete(),
+                    item.getWhen(), currentSave.getId(), parent));
         }
         try {
             FileOutputStream os = context.openFileOutput(FILENAME_TODO_TXT, Context.MODE_PRIVATE);
@@ -177,14 +179,15 @@ public class ListStore {
         }
     }
 
-    public void addEntry(String name, boolean completed, UUID parentId, String parent) {
-        unusedLines.add(new TodoTxtLine(UUID.randomUUID(), name, completed, parentId, parent));
+    public void addEntry(String name, boolean completed, When when, UUID parentId, String parent) {
+        unusedLines.add(new TodoTxtLine(UUID.randomUUID(), name, completed, when, parentId, parent));
     }
 
     private class TodoTxtLine {
         private final UUID id;
         private final String name;
         private final boolean complete;
+        private final When when;
         private final UUID parentId;
         private final String parent;
 
@@ -203,7 +206,9 @@ public class ListStore {
             //For full support deal with flexible ordering
             String[] parts = line.split(ID_TAG);
             line = parts[0];
-            String[] idParts = parts[1].split(PARENT_TAG);
+            String[] whenParts = parts[1].split(WHEN_TAG);
+            when = When.valueOf(whenParts[1]);
+            String[] idParts = whenParts[0].split(PARENT_TAG);
             id = UUID.fromString(idParts[0]);
             parentId = UUID.fromString(idParts[1]);
 
@@ -216,10 +221,11 @@ public class ListStore {
             }
         }
 
-        TodoTxtLine(UUID id, String name, boolean complete, UUID parentId, String parent) {
+        TodoTxtLine(UUID id, String name, boolean complete, When when, UUID parentId, String parent) {
             this.id = id;
             this.complete = complete;
             this.name = name;
+            this.when = when;
             this.parentId = parentId;
             this.parent = parent.replace(" ", "|¬");
         }
@@ -237,11 +243,11 @@ public class ListStore {
         }
 
         public Item toItem() {
-            return new Item(id, name, complete);
+            return new Item(id, name, complete, when);
         }
 
         public Item toItem(int subItemsCount, int itemsRemainCount) {
-            return new Item(id, name, complete, subItemsCount, itemsRemainCount);
+            return new Item(id, name, complete, when, subItemsCount, itemsRemainCount);
         }
 
         public String toLine() {
@@ -257,6 +263,8 @@ public class ListStore {
             sb.append(id);
             sb.append(PARENT_TAG);
             sb.append(parentId);
+            sb.append(WHEN_TAG);
+            sb.append(when.toString());
             return sb.toString();
         }
     }

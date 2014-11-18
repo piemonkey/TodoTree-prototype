@@ -8,16 +8,17 @@ public class Item {
     private boolean complete;
     private int nSubItems;
     private int nItemsLeft;
+    private When when;
 
     public Item(String name) {
-        this(UUID.randomUUID(), name, false, 0, 0);
+        this(UUID.randomUUID(), name, false, When.NA, 0, 0);
     }
 
-    public Item(UUID id, String name, boolean complete) {
-        this(id, name, complete, 0, 0);
+    public Item(UUID id, String name, boolean complete, When when) {
+        this(id, name, complete, when, 0, 0);
     }
 
-    public Item(UUID id, String name, boolean complete, int nSubItems, int nItemsLeft) {
+    public Item(UUID id, String name, boolean complete, When when, int nSubItems, int nItemsLeft) {
         this.id = id;
         this.name = name;
         this.complete = complete;
@@ -43,6 +44,18 @@ public class Item {
 
     public boolean toggleComplete() {
         return complete = !complete;
+    }
+
+    public When getWhen() {
+        return when;
+    }
+
+    public void doToday() {
+        when = When.TODAY;
+    }
+
+    public void doTomorrow() {
+        when = When.TOMORROW;
     }
 
     public int getNSubItems() {
