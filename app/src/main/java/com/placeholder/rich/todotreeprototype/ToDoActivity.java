@@ -81,6 +81,10 @@ public class ToDoActivity extends Activity {
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
                 }
+                return setupItemView(position, convertView);
+            }
+
+            private View setupItemView(int position, View convertView) {
                 final TextView itemText = (TextView) convertView.findViewById(R.id.text_list_item);
                 final Item item = getItem(position);
                 itemText.setText(item.getName());
@@ -90,9 +94,7 @@ public class ToDoActivity extends Activity {
                 itemText.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        item.toggleComplete();
-                        listStore.save(list);
-                        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+                        onClickTodoText(item, itemText);
                     }
                 });
                 if (item.hasSubItems()) {
@@ -105,6 +107,10 @@ public class ToDoActivity extends Activity {
 
                     @Override
                     public void onClick(final View view) {
+                        onClickNewSubItem();
+                    }
+
+                    private void onClickNewSubItem() {
                         if (item.hasSubItems()) {
                             openActivityForList(item, getContext());
                         } else {
@@ -138,37 +144,51 @@ public class ToDoActivity extends Activity {
                     public void onCreateContextMenu(ContextMenu menu,
                                                     View view,
                                                     ContextMenu.ContextMenuInfo info) {
+                        createTodoContextMenu(menu);
+                    }
+
+                    private void createTodoContextMenu(ContextMenu menu) {
                         menu.setHeaderTitle(item.getName());
                         menu.add("edit").setOnMenuItemClickListener(
                                 new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem menuItem) {
-                                AlertDialog.Builder itemEditBuilder =
-                                        new AlertDialog.Builder(listView.getContext());
-                                itemEditBuilder.setPositiveButton
-                                        ("Done", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialogInterface, int i) {
-                                                item.setName(newName.getText().toString());
-                                                listStore.save(list);
-                                                displayList();
-                                            }
-                                        });
-                                itemEditBuilder.setView(getLayoutInflater().inflate(
-                                        R.layout.dialog_new_sub_item, listView, false));
-                                AlertDialog newSubItem = itemEditBuilder.show();
-                                newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
-                                newName.setHint("New name...");
+                                onMenuItemClickTodoEdit();
 
                                 return true;
                             }
                         });
+                    }
+
+                    private void onMenuItemClickTodoEdit() {
+                        AlertDialog.Builder itemEditBuilder =
+                                new AlertDialog.Builder(listView.getContext());
+                        itemEditBuilder.setPositiveButton
+                                ("Done", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        item.setName(newName.getText().toString());
+                                        listStore.save(list);
+                                        displayList();
+                                    }
+                                });
+                        itemEditBuilder.setView(getLayoutInflater().inflate(
+                                R.layout.dialog_new_sub_item, listView, false));
+                        AlertDialog newSubItem = itemEditBuilder.show();
+                        newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
+                        newName.setHint("New name...");
                     }
                 });
 
                 return convertView;
             }
         });
+    }
+
+    private void onClickTodoText(Item item, TextView itemText) {
+        item.toggleComplete();
+        listStore.save(list);
+        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     private void openActivityForList(Item item, Context context) {
