@@ -40,6 +40,38 @@ public class ListStore {
                 throw new RuntimeException(e);
             }
         }
+        try {
+            FileInputStream fis = context.openFileInput(FILENAME_TODO_TXT);
+            InputStreamReader irs = new InputStreamReader(fis);
+            BufferedReader todoTxt = new BufferedReader(irs);
+            String todo = todoTxt.readLine();
+            ArrayList<String> lines = new ArrayList<String>();
+            while (todo != null) {
+                lines.add(todo);
+                if (todo.contains(WHEN_TAG)) {
+                    return;
+                }
+                todo = todoTxt.readLine();
+            }
+            todoTxt.close();
+            irs.close();
+            fis.close();
+            FileOutputStream os = context.openFileOutput(FILENAME_TODO_TXT, Context.MODE_PRIVATE);
+            OutputStreamWriter osw = new OutputStreamWriter(os);
+            BufferedWriter bw = new BufferedWriter(osw);
+            for (String line : lines) {
+                String newLine = line.concat(" when:NONE");
+                bw.append(newLine);
+                bw.newLine();
+            }
+            bw.close();
+            osw.close();
+            os.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void save(ListTree currentSave) {
