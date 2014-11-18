@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -96,13 +95,11 @@ public class ToDoActivity extends Activity {
                         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
                     }
                 });
-                Button button = (Button) convertView.findViewById(R.id.button_list_sublist);
                 if (item.hasSubItems()) {
                     itemText.setText(itemText.getText() + " (" + item.getNItemsLeft() + "/"
                             + item.getNSubItems() + ")");
-//                } else {
-//                    button.setText(button.getText() + "+");
                 }
+                Button button = (Button) convertView.findViewById(R.id.button_list_sublist);
                 button.setOnClickListener(new View.OnClickListener() {
                     private EditText newItemName;
 
@@ -128,7 +125,8 @@ public class ToDoActivity extends Activity {
                             newSubItemBuilder.setView(getLayoutInflater().inflate(
                                     R.layout.dialog_new_sub_item, listView, false));
                             AlertDialog newSubItem = newSubItemBuilder.show();
-                            newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_new_sub);
+                            newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
+                            newItemName.setHint("New sub-item...");
                         }
                     }
                 });
@@ -159,7 +157,8 @@ public class ToDoActivity extends Activity {
                                 itemEditBuilder.setView(getLayoutInflater().inflate(
                                         R.layout.dialog_new_sub_item, listView, false));
                                 AlertDialog newSubItem = itemEditBuilder.show();
-                                newName = (EditText) newSubItem.findViewById(R.id.edit_text_new_sub);
+                                newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
+                                newName.setHint("New name...");
 
                                 return true;
                             }
