@@ -129,7 +129,7 @@ public class ToDoActivity extends Activity {
                                         }
                                     });
                             newSubItemBuilder.setView(getLayoutInflater().inflate(
-                                    R.layout.dialog_new_sub_item, listView, false));
+                                    R.layout.dialog_text_entry_alert, listView, false));
                             AlertDialog newSubItem = newSubItemBuilder.show();
                             newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
                             newItemName.setHint("New sub-item...");
@@ -182,7 +182,7 @@ public class ToDoActivity extends Activity {
                                     }
                                 });
                         itemEditBuilder.setView(getLayoutInflater().inflate(
-                                R.layout.dialog_new_sub_item, listView, false));
+                                R.layout.dialog_text_entry_alert, listView, false));
                         AlertDialog newSubItem = itemEditBuilder.show();
                         newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
                         newName.setHint("New name...");
