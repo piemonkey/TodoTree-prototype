@@ -77,6 +77,7 @@ public class ToDoActivity extends Activity {
 
     void displayList() {
         final ListView listView = (ListView) findViewById(R.id.item_list);
+        listView.requestFocus();
         todoListAdapter = new ArrayAdapter<Item>(
                 getApplicationContext(), R.layout.list_item, list.getItems()) {
             @Override
