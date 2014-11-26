@@ -1,6 +1,7 @@
 package com.placeholder.rich.todotreeprototype.infrastructure;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
@@ -8,7 +9,6 @@ import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -16,12 +16,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 public class ListStore {
+
+    private static final String LOG_TAG = "ListStore";
 
     private static final String ROOT_PARENT_STRING = "¬ROOT¬";
     private static final String ID_TAG = " id:";
@@ -29,19 +33,107 @@ public class ListStore {
     private static final String WHEN_TAG = " when:";
     private static final String FILENAME_TODO_TXT = "todo.txt";
 
+    private static final String FILENAME_BACKUP_FORMAT = "todo.txt.backup-v1-%c-%03d";
+    private static final int BACKUP_MIN = 0;
+    private static final int BACKUP_MAX = 200;
+
     private ArrayList<TodoTxtLine> unusedLines = new ArrayList<TodoTxtLine>();
     private Context context;
 
     public ListStore(Context context) {
         this.context = context;
-        File saveFile = context.getFileStreamPath(FILENAME_TODO_TXT);
-        if (!saveFile.exists()) {
+        String[] files = context.fileList();
+        Arrays.sort(files);
+        if (files.length == 0 || !FILENAME_TODO_TXT.equals(files[0])) {
+            if (files.length == 0) {
+                Log.i(LOG_TAG, "Store file does not exist, creating new one. No files found at all");
+            } else {
+                Log.i(LOG_TAG, "Store file does not exist, creating new one. Only found: " + files[0]);
+            }
             try {
                 context.openFileOutput(FILENAME_TODO_TXT, Context.MODE_PRIVATE);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+        } else {
+            String backupFileName = figureOutNextBackup(files);
+            Log.d(LOG_TAG, "Store file found, backing up to " + backupFileName);
+            try {
+                FileInputStream fis = context.openFileInput(FILENAME_TODO_TXT);
+                InputStreamReader irs = new InputStreamReader(fis);
+                BufferedReader todoTxt = new BufferedReader(irs);
+                String todo = todoTxt.readLine();
+                ArrayList<String> lines = new ArrayList<String>();
+                while (todo != null) {
+                    lines.add(todo);
+                    todo = todoTxt.readLine();
+                }
+                todoTxt.close();
+                irs.close();
+                fis.close();
+                FileOutputStream os = context.openFileOutput(backupFileName, Context.MODE_PRIVATE);
+                OutputStreamWriter osw = new OutputStreamWriter(os);
+                BufferedWriter bw = new BufferedWriter(osw);
+                for (String line : lines) {
+                    bw.append(line);
+                    bw.newLine();
+                }
+                bw.close();
+                osw.close();
+                os.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+       }
+    }
+
+    private String figureOutNextBackup(String[] files) {
+        final String newName;
+        final String toDelete;
+        if (files.length == 1) {
+            newName = String.format((Locale) null, FILENAME_BACKUP_FORMAT, 'b', BACKUP_MIN);
+        } else {
+            String[] highestParts = files[files.length - 1].split("-", 4);
+            if (highestParts[2].equals("a")) {
+                // Only happens when all 'b's have been deleted
+                newName = String.format((Locale) null, FILENAME_BACKUP_FORMAT, 'b', BACKUP_MIN);
+                toDelete = String.format((Locale) null, FILENAME_BACKUP_FORMAT, 'a', BACKUP_MAX);
+            } else {
+                int nextB = Integer.parseInt(highestParts[3]) + 1;
+                if (nextB > BACKUP_MAX) {
+                    // Just found max so need to find lowest 'a' to find next filename
+                    String[] lowestParts = files[1].split("-", 4);
+                    if (lowestParts[2].equals("b")) {
+                        // Have just finished counting up the 'b's so move on to 'a's
+                        newName = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                                'a', BACKUP_MAX);
+                        toDelete = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                                'b', BACKUP_MIN);
+                    } else {
+                        // Next 'a' is one lower than current 'a' and delete inverse 'b'
+                        int nextA = Integer.parseInt(lowestParts[3]) - 1;
+                        newName = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                                'a', nextA);
+                        toDelete = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                                'b', BACKUP_MAX - nextA);
+                    }
+                } else {
+                    // Must be counting up the 'b's so pick the next
+                    newName = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                            'b', nextB);
+                    toDelete = String.format((Locale) null, FILENAME_BACKUP_FORMAT,
+                            'a', BACKUP_MAX - nextB);
+                }
+            }
+            if (context.deleteFile(toDelete)) {
+                Log.d(LOG_TAG, "Old backup file deleted: " + toDelete);
+            } else {
+                Log.d(LOG_TAG, "Backup file not found for deletion, tried to find " + toDelete);
+            }
         }
+        return newName;
     }
 
     public void save(ListTree currentSave) {

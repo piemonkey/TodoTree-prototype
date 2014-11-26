@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -34,6 +35,8 @@ public class ToDoActivity extends Activity {
 
     private ListTree list;
     private ArrayList<UUID> listBreadcrumb;
+
+    private BaseAdapter todoListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,8 @@ public class ToDoActivity extends Activity {
 
     void displayList() {
         final ListView listView = (ListView) findViewById(R.id.item_list);
-        listView.setAdapter(new ArrayAdapter<Item>(
+        listView.requestFocus();
+        todoListAdapter = new ArrayAdapter<Item>(
                 getApplicationContext(), R.layout.list_item, list.getItems()) {
             @Override
             public View getView(final int position, View convertView, final ViewGroup parent) {
@@ -130,7 +134,7 @@ public class ToDoActivity extends Activity {
                                         }
                                     });
                             newSubItemBuilder.setView(getLayoutInflater().inflate(
-                                    R.layout.dialog_new_sub_item, listView, false));
+                                    R.layout.dialog_text_entry_alert, listView, false));
                             AlertDialog newSubItem = newSubItemBuilder.show();
                             newItemName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
                             newItemName.setHint("New sub-item...");
@@ -179,11 +183,11 @@ public class ToDoActivity extends Activity {
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         item.setName(newName.getText().toString());
                                         listStore.save(list);
-                                        displayList();
+                                        todoListAdapter.notifyDataSetChanged();
                                     }
                                 });
                         itemEditBuilder.setView(getLayoutInflater().inflate(
-                                R.layout.dialog_new_sub_item, listView, false));
+                                R.layout.dialog_text_entry_alert, listView, false));
                         AlertDialog newSubItem = itemEditBuilder.show();
                         newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
                         newName.setHint("New name...");
@@ -199,7 +203,7 @@ public class ToDoActivity extends Activity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 list.deleteItem(item);
                                 listStore.save(list);
-                                displayList();
+                                todoListAdapter.notifyDataSetChanged();
                             }
                         });
                         itemDeleteBuilder.show();
@@ -208,7 +212,8 @@ public class ToDoActivity extends Activity {
 
                 return convertView;
             }
-        });
+        };
+        listView.setAdapter(todoListAdapter);
     }
 
     private void onClickTodoText(Item item, TextView itemText) {
@@ -238,6 +243,7 @@ public class ToDoActivity extends Activity {
                 list.addItem(new Item(itemText.getText().toString()));
                 itemText.getText().clear();
                 listStore.save(list);
+                todoListAdapter.notifyDataSetChanged();
             }
         });
     }
