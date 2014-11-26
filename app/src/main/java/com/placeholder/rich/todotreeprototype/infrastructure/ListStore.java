@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
+import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.io.BufferedReader;
@@ -191,6 +192,19 @@ public class ListStore {
         return new ListTree(currentId, current.getName(), items);
     }
 
+    public TagList loadTagged(final When tag) {
+        List<TodoTxtLine> lines = getLinesFromFile();
+
+        List<Item> tagged = new ArrayList<Item>();
+        for (TodoTxtLine line : lines) {
+            if (line.hasTag(tag)) {
+                tagged.add(line.toItem());
+            }
+        }
+
+        return new TagList(tag, tagged);
+    }
+
     public ListTree loadRoot() {
         List<TodoTxtLine> lines = getLinesFromFile();
 
@@ -332,6 +346,10 @@ public class ListStore {
 
         public boolean hasParent(UUID parentId) {
             return this.parentId.equals(parentId);
+        }
+
+        public boolean hasTag(When tag) {
+            return when == tag;
         }
 
         public Item toItem() {
