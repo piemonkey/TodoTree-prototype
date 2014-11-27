@@ -22,6 +22,7 @@ public class Item {
         this.id = id;
         this.name = name;
         this.complete = complete;
+        this.when = when;
         this.nSubItems = nSubItems;
         this.nItemsLeft = nItemsLeft;
     }
