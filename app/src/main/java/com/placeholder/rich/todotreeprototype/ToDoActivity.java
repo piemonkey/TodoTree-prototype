@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
+import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreFile;
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.When;
@@ -56,7 +57,7 @@ public class ToDoActivity extends Activity {
         } else {
             listBreadcrumb = new ArrayList<UUID>();
         }
-        listStore = new ListStore(this);
+        listStore = new ListStoreFile(this);
 
         setContentView(R.layout.activity_to_do);
     }
