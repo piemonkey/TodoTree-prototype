@@ -52,15 +52,33 @@ public class ListStoreSQLite implements ListStore {
     private static final class EntryTable {
         private static final String NAME = "todo_entry";
         private static final String COL_ID = "id";
-        private static final String COL_ID_TYPE = "INTEGER PRIMARY KEY";
+        private static final String COL_ID_TYPE = "TEXT PRIMARY KEY";
         private static final String COL_NAME = "name";
         private static final String COL_NAME_TYPE = "TEXT NOT NULL";
+        private static final String COL_COMPLETE = "complete";
+        private static final String COL_COMPLETE_TYPE = "BOOLEAN NOT NULL DEFAULT FALSE";
+        private static final String COL_PARENT = "parent";
+        private static final String COL_PARENT_TYPE = "TEXT";
+        private static final String COL_SUB_ITEMS = "sub_items";
+        private static final String COL_SUB_ITEMS_TYPE = "INTEGER NOT NULL DEFAULT 0";
+        private static final String COL_ITEMS_LEFT = "items_left";
+        private static final String COL_ITEMS_LEFT_TYPE = "INTEGER NOT NULL DEFAULT 0";
+        private static final String COL_WHEN = "when_tag";
+        private static final String COL_WHEN_TYPE = "TEXT NOT NULL";
+        private static final String CONSTRAINT_PARENT_ID =
+                "FOREIGN KEY (parent) REFERENCES todo_entry (id)";
 
         private static final String SQL_CREATE = String.format((Locale) null,
-                "CREATE TABLE %s (%s %s, %s %s);",
+                "CREATE TABLE %s (%s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s);",
                 NAME,
                 COL_ID, COL_ID_TYPE,
-                COL_NAME, COL_NAME_TYPE);
+                COL_NAME, COL_NAME_TYPE,
+                COL_COMPLETE, COL_COMPLETE_TYPE,
+                COL_PARENT, COL_PARENT_TYPE,
+                COL_SUB_ITEMS, COL_SUB_ITEMS_TYPE,
+                COL_ITEMS_LEFT, COL_ITEMS_LEFT_TYPE,
+                COL_WHEN, COL_WHEN_TYPE,
+                CONSTRAINT_PARENT_ID);
     }
 
     private class TodoDbHelper extends SQLiteOpenHelper {
