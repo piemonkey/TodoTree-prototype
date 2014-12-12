@@ -1,9 +1,11 @@
 package com.placeholder.rich.todotreeprototype.infrastructure;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
@@ -23,7 +25,23 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public void save(ListTree currentSave) {
-        //TODO
+        for (Item item : currentSave.getItems()) {
+            todoDb.insertWithOnConflict(EntryTable.NAME, null, prepForDB(item, currentSave.getId()),
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    private ContentValues prepForDB(Item item, UUID parent) {
+        ContentValues values = new ContentValues();
+        values.put(EntryTable.COL_ID, item.getId().toString());
+        values.put(EntryTable.COL_NAME, item.getName());
+        values.put(EntryTable.COL_COMPLETE, item.isComplete());
+        values.put(EntryTable.COL_PARENT, parent.toString());
+        values.put(EntryTable.COL_ITEMS_LEFT, item.getNItemsLeft());
+        values.put(EntryTable.COL_SUB_ITEMS, item.getNSubItems());
+        values.put(EntryTable.COL_WHEN, item.getWhen().name());
+
+        return values;
     }
 
     @Override
