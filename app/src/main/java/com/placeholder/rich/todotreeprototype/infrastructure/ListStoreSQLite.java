@@ -2,18 +2,24 @@ package com.placeholder.rich.todotreeprototype.infrastructure;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 public class ListStoreSQLite implements ListStore {
+
+    private static final String LOG_TAG = "ListStoreSQLite";
 
     private final TodoDbHelper todoDbHelper;
     private final SQLiteDatabase todoDb;
@@ -46,18 +52,55 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public ListTree load(UUID currentId) {
-        //TODO
-        return null;
-    }
+        String[] selectionArgs = {currentId.toString()};
+        final ListTree list;
+        if (!currentId.equals(ListTree.getRootId())) {
+            Cursor parentResult = todoDb.query(EntryTable.NAME, EntryTable.COLS_QUERY_NAME,
+                    EntryTable.SQL_WHERE_ID, selectionArgs, null, null, null);
+            final String name;
+            if (parentResult.moveToNext()) {
+                name = parentResult.getString(0);
+            } else {
+                throw new RuntimeException("Trying to load list for entry " + currentId +
+                        " which does not exist.");
+            }
+            List<Item> items = loadItems(selectionArgs);
 
-    @Override
-    public TagList loadTagged(When tag) {
-        //TODO
-        return null;
+            list = new ListTree(currentId, name, items);
+        } else {
+            Log.e(LOG_TAG, "Incorrectly trying to get root list using general load method");
+            list = loadRoot();
+        }
+        return list;
     }
 
     @Override
     public ListTree loadRoot() {
+        String[] selectionArgs = {ListTree.getRootId().toString()};
+        List<Item> items = loadItems(selectionArgs);
+
+        return ListTree.rootList(items);
+    }
+
+    private List<Item> loadItems(String[] selectionArgs) {
+        Cursor todos = todoDb.query(EntryTable.NAME, EntryTable.COLS_QUERY_ALL,
+                EntryTable.SQL_WHERE_PARENT, selectionArgs, null, null, null);
+        List<Item> items = new ArrayList<Item>(todos.getCount());
+        while (todos.moveToNext()) {
+            items.add(new Item(
+                    UUID.fromString(todos.getString(todos.getColumnIndex(EntryTable.COL_ID))),
+                    todos.getString(todos.getColumnIndex(EntryTable.COL_NAME)),
+                    todos.getInt(todos.getColumnIndex(EntryTable.COL_COMPLETE)) > 0,
+                    When.valueOf(todos.getString(todos.getColumnIndex(EntryTable.COL_WHEN))),
+                    todos.getInt(todos.getColumnIndex(EntryTable.COL_SUB_ITEMS)),
+                    todos.getInt(todos.getColumnIndex(EntryTable.COL_ITEMS_LEFT))
+                    ));
+        }
+        return items;
+    }
+
+    @Override
+    public TagList loadTagged(When tag) {
         //TODO
         return null;
     }
@@ -97,6 +140,12 @@ public class ListStoreSQLite implements ListStore {
                 COL_ITEMS_LEFT, COL_ITEMS_LEFT_TYPE,
                 COL_WHEN, COL_WHEN_TYPE,
                 CONSTRAINT_PARENT_ID);
+        private static final String SQL_WHERE_PARENT = COL_PARENT + " = ?";
+        private static final String SQL_WHERE_ID = COL_ID + " = ?";
+
+        private static final String[] COLS_QUERY_ALL = {COL_ID, COL_NAME, COL_COMPLETE,
+                COL_ITEMS_LEFT, COL_SUB_ITEMS, COL_WHEN};
+        private static final String[] COLS_QUERY_NAME = {COL_NAME};
     }
 
     private class TodoDbHelper extends SQLiteOpenHelper {
