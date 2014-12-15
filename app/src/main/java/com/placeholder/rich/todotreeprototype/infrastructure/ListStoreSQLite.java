@@ -109,6 +109,22 @@ public class ListStoreSQLite implements ListStore {
     public void addEntry(String name, boolean completed, When when, UUID parentId, String parent) {
         Item item = new Item(UUID.randomUUID(), name, completed, when);
         todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item, parentId));
+        //TODO update sub items
+    }
+
+    @Override
+    public void addItem(Item item, UUID parent) {
+        //TODO
+    }
+
+    @Override
+    public void updateCompleteness(Item item, UUID parent) {
+        //TODO
+    }
+
+    @Override
+    public void delete(Item item, UUID parent) {
+        //TODO
     }
 
     private static final class EntryTable {
