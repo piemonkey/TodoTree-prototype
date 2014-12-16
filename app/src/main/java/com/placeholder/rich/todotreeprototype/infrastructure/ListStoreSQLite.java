@@ -108,13 +108,20 @@ public class ListStoreSQLite implements ListStore {
     @Override
     public void addEntry(String name, boolean completed, When when, UUID parentId, String parent) {
         Item item = new Item(UUID.randomUUID(), name, completed, when);
-        todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item, parentId));
-        //TODO update sub items
+        addItem(item, parentId);
     }
 
     @Override
     public void addItem(Item item, UUID parent) {
-        //TODO
+        todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item, parent));
+        String[] parentString = {parent.toString()};
+        final String sqlIncrement;
+        if (item.isComplete()) {
+            sqlIncrement = EntryTable.SQL_INC_SUB;
+        } else {
+            sqlIncrement = EntryTable.SQL_INC_SUB_AND_INCOMPLETE;
+        }
+        todoDb.execSQL(sqlIncrement, parentString);
     }
 
     @Override
@@ -157,8 +164,16 @@ public class ListStoreSQLite implements ListStore {
                 COL_ITEMS_LEFT, COL_ITEMS_LEFT_TYPE,
                 COL_WHEN, COL_WHEN_TYPE,
                 CONSTRAINT_PARENT_ID);
+        private static final String SQL_SUB_ITEMS_INC =
+                COL_SUB_ITEMS + " = " + COL_SUB_ITEMS + " + 1";
+        private static final String SQL_ITEMS_LEFT_INC =
+                COL_ITEMS_LEFT + " = " + COL_ITEMS_LEFT + " + 1";
         private static final String SQL_WHERE_PARENT = COL_PARENT + " = ?";
         private static final String SQL_WHERE_ID = COL_ID + " = ?";
+        private static final String SQL_INC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
+                SQL_SUB_ITEMS_INC + ", " + SQL_ITEMS_LEFT_INC + " WHERE " + SQL_WHERE_ID;
+        private static final String SQL_INC_SUB = "UPDATE " + NAME + " SET " + SQL_SUB_ITEMS_INC +
+                " WHERE " + SQL_WHERE_ID;
 
         private static final String[] COLS_QUERY_ALL = {COL_ID, COL_NAME, COL_COMPLETE,
                 COL_ITEMS_LEFT, COL_SUB_ITEMS, COL_WHEN};
