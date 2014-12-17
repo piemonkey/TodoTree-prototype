@@ -20,7 +20,7 @@ public interface ListStore {
 
     void addItem(Item item, UUID parent);
 
-    void updateCompleteness(Item item, UUID parent);
+    void saveUpdatedCompleteness(Item item, UUID parent);
 
     void delete(Item item, UUID parent);
 }

@@ -390,7 +390,7 @@ public class ListStoreFile implements ListStore {
     }
 
     @Override
-    public void updateCompleteness(Item item, UUID parent) {
+    public void saveUpdatedCompleteness(Item item, UUID parent) {
         throw new UnsupportedOperationException("Getting rid of file store should not have been called");
     }
 

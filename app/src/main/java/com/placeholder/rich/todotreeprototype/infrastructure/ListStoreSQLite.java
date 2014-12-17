@@ -125,8 +125,20 @@ public class ListStoreSQLite implements ListStore {
     }
 
     @Override
-    public void updateCompleteness(Item item, UUID parent) {
-        //TODO
+    public void saveUpdatedCompleteness(Item item, UUID parent) {
+        final ContentValues updatedValues = new ContentValues(1);
+        final String parentUpdate;
+        if (item.isComplete()) {
+            updatedValues.put(EntryTable.COL_COMPLETE, true);
+            parentUpdate = EntryTable.SQL_DEC_INCOMPLETE;
+        } else {
+            updatedValues.put(EntryTable.COL_COMPLETE, false);
+            parentUpdate = EntryTable.SQL_INC_INCOMPLETE;
+        }
+        String[] whereId = {item.getId().toString()};
+        todoDb.update(EntryTable.NAME, updatedValues, EntryTable.SQL_WHERE_ID, whereId);
+        String[] whereParent = {parent.toString()};
+        todoDb.execSQL(parentUpdate, whereParent);
     }
 
     @Override
@@ -168,11 +180,19 @@ public class ListStoreSQLite implements ListStore {
                 COL_SUB_ITEMS + " = " + COL_SUB_ITEMS + " + 1";
         private static final String SQL_ITEMS_LEFT_INC =
                 COL_ITEMS_LEFT + " = " + COL_ITEMS_LEFT + " + 1";
+        private static final String SQL_SUB_ITEMS_DEC =
+                COL_SUB_ITEMS + " = " + COL_SUB_ITEMS + " - 1";
+        private static final String SQL_ITEMS_LEFT_DEC =
+                COL_ITEMS_LEFT + " = " + COL_ITEMS_LEFT + " - 1";
         private static final String SQL_WHERE_PARENT = COL_PARENT + " = ?";
         private static final String SQL_WHERE_ID = COL_ID + " = ?";
         private static final String SQL_INC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
                 SQL_SUB_ITEMS_INC + ", " + SQL_ITEMS_LEFT_INC + " WHERE " + SQL_WHERE_ID;
         private static final String SQL_INC_SUB = "UPDATE " + NAME + " SET " + SQL_SUB_ITEMS_INC +
+                " WHERE " + SQL_WHERE_ID;
+        private static final String SQL_INC_INCOMPLETE = "UPDATE " + NAME + " SET " + SQL_ITEMS_LEFT_INC +
+                " WHERE " + SQL_WHERE_ID;
+        private static final String SQL_DEC_INCOMPLETE = "UPDATE " + NAME + " SET " + SQL_ITEMS_LEFT_DEC +
                 " WHERE " + SQL_WHERE_ID;
 
         private static final String[] COLS_QUERY_ALL = {COL_ID, COL_NAME, COL_COMPLETE,
