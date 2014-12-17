@@ -21,12 +21,10 @@ public class ListStoreSQLite implements ListStore {
 
     private static final String LOG_TAG = "ListStoreSQLite";
 
-    private final TodoDbHelper todoDbHelper;
     private final SQLiteDatabase todoDb;
 
     public ListStoreSQLite(Context context) {
-        todoDbHelper = new TodoDbHelper(context);
-        todoDb = todoDbHelper.getWritableDatabase();
+        todoDb = new TodoDbHelper(context).getWritableDatabase();
     }
 
     @Override
@@ -87,16 +85,20 @@ public class ListStoreSQLite implements ListStore {
                 EntryTable.SQL_WHERE_PARENT, selectionArgs, null, null, null);
         List<Item> items = new ArrayList<Item>(todos.getCount());
         while (todos.moveToNext()) {
-            items.add(new Item(
-                    UUID.fromString(todos.getString(todos.getColumnIndex(EntryTable.COL_ID))),
-                    todos.getString(todos.getColumnIndex(EntryTable.COL_NAME)),
-                    todos.getInt(todos.getColumnIndex(EntryTable.COL_COMPLETE)) > 0,
-                    When.valueOf(todos.getString(todos.getColumnIndex(EntryTable.COL_WHEN))),
-                    todos.getInt(todos.getColumnIndex(EntryTable.COL_SUB_ITEMS)),
-                    todos.getInt(todos.getColumnIndex(EntryTable.COL_ITEMS_LEFT))
-                    ));
+            items.add(extractQueriedItem(todos));
         }
         return items;
+    }
+
+    private Item extractQueriedItem(Cursor todos) {
+        return new Item(
+                UUID.fromString(todos.getString(todos.getColumnIndex(EntryTable.COL_ID))),
+                todos.getString(todos.getColumnIndex(EntryTable.COL_NAME)),
+                todos.getInt(todos.getColumnIndex(EntryTable.COL_COMPLETE)) > 0,
+                When.valueOf(todos.getString(todos.getColumnIndex(EntryTable.COL_WHEN))),
+                todos.getInt(todos.getColumnIndex(EntryTable.COL_SUB_ITEMS)),
+                todos.getInt(todos.getColumnIndex(EntryTable.COL_ITEMS_LEFT))
+                );
     }
 
     @Override
