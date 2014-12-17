@@ -143,7 +143,16 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public void delete(Item item, UUID parent) {
-        //TODO
+        final String parentUpdate;
+        if (item.isComplete()) {
+            parentUpdate = EntryTable.SQL_DEC_SUB;
+        } else {
+            parentUpdate = EntryTable.SQL_DEC_SUB_AND_INCOMPLETE;
+        }
+        String[] whereId = {item.getId().toString()};
+        todoDb.delete(EntryTable.NAME, EntryTable.SQL_WHERE_ID, whereId);
+        String[] whereParent = {parent.toString()};
+        todoDb.execSQL(parentUpdate, whereParent);
     }
 
     private static final class EntryTable {
@@ -188,7 +197,11 @@ public class ListStoreSQLite implements ListStore {
         private static final String SQL_WHERE_ID = COL_ID + " = ?";
         private static final String SQL_INC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
                 SQL_SUB_ITEMS_INC + ", " + SQL_ITEMS_LEFT_INC + " WHERE " + SQL_WHERE_ID;
+        private static final String SQL_DEC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
+                SQL_SUB_ITEMS_DEC + ", " + SQL_ITEMS_LEFT_DEC + " WHERE " + SQL_WHERE_ID;
         private static final String SQL_INC_SUB = "UPDATE " + NAME + " SET " + SQL_SUB_ITEMS_INC +
+                " WHERE " + SQL_WHERE_ID;
+        private static final String SQL_DEC_SUB = "UPDATE " + NAME + " SET " + SQL_SUB_ITEMS_DEC +
                 " WHERE " + SQL_WHERE_ID;
         private static final String SQL_INC_INCOMPLETE = "UPDATE " + NAME + " SET " + SQL_ITEMS_LEFT_INC +
                 " WHERE " + SQL_WHERE_ID;
