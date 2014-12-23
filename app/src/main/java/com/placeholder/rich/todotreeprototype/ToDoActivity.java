@@ -20,7 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
-import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreFile;
+import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreSQLite;
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.When;
@@ -57,7 +57,7 @@ public class ToDoActivity extends Activity {
         } else {
             listBreadcrumb = new ArrayList<UUID>();
         }
-        listStore = new ListStoreFile(this);
+        listStore = new ListStoreSQLite(this);
 
         setContentView(R.layout.activity_to_do);
     }
@@ -128,9 +128,6 @@ public class ToDoActivity extends Activity {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             listStore.addEntry(newItemName.getText().toString(),
                                                     false, When.NA, item.getId(), item.getName());
-                                            item.setNItemsLeft(1);
-                                            item.setNSubItems(1);
-                                            listStore.save(list);
                                             openActivityForList(item, getContext());
                                         }
                                     });
@@ -203,7 +200,7 @@ public class ToDoActivity extends Activity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 list.deleteItem(item);
-                                listStore.save(list);
+                                listStore.delete(item, list.getId());
                                 todoListAdapter.notifyDataSetChanged();
                             }
                         });
@@ -219,7 +216,7 @@ public class ToDoActivity extends Activity {
 
     private void onClickTodoText(Item item, TextView itemText) {
         item.toggleComplete();
-        listStore.save(list);
+        listStore.saveUpdatedCompleteness(item, list.getId());
         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
@@ -241,9 +238,10 @@ public class ToDoActivity extends Activity {
         addItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                list.addItem(new Item(itemText.getText().toString()));
+                Item newItem = new Item(itemText.getText().toString());
+                list.addItem(newItem);
+                listStore.addItem(newItem, list.getId());
                 itemText.getText().clear();
-                listStore.save(list);
                 todoListAdapter.notifyDataSetChanged();
             }
         });
