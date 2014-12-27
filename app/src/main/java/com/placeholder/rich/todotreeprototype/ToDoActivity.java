@@ -126,9 +126,12 @@ public class ToDoActivity extends Activity {
                                     ("Done", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            listStore.addEntry(newItemName.getText().toString(),
-                                                    false, When.NA, item.getId(), item.getName());
-                                            openActivityForList(item, getContext());
+                                            String name = newItemName.getText().toString();
+                                            if (!name.isEmpty()) {
+                                                listStore.addEntry(name, false, When.NA,
+                                                        item.getId(), item.getName());
+                                                openActivityForList(item, getContext());
+                                            }
                                         }
                                     });
                             newSubItemBuilder.setView(getLayoutInflater().inflate(
@@ -179,9 +182,12 @@ public class ToDoActivity extends Activity {
                                 ("Done", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        item.setName(newName.getText().toString());
-                                        listStore.save(list);
-                                        todoListAdapter.notifyDataSetChanged();
+                                        String name = newName.getText().toString();
+                                        if (!name.isEmpty()) {
+                                            item.setName(name);
+                                            listStore.save(list);
+                                            todoListAdapter.notifyDataSetChanged();
+                                        }
                                     }
                                 });
                         itemEditBuilder.setView(getLayoutInflater().inflate(
@@ -238,11 +244,14 @@ public class ToDoActivity extends Activity {
         addItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Item newItem = new Item(itemText.getText().toString());
-                list.addItem(newItem);
-                listStore.addItem(newItem, list.getId());
-                itemText.getText().clear();
-                todoListAdapter.notifyDataSetChanged();
+                String name = itemText.getText().toString();
+                if (!name.isEmpty()) {
+                    Item newItem = new Item(name);
+                    list.addItem(newItem);
+                    listStore.addItem(newItem, list.getId());
+                    itemText.getText().clear();
+                    todoListAdapter.notifyDataSetChanged();
+                }
             }
         });
     }
