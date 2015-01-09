@@ -100,6 +100,7 @@ public class ListStoreSQLite implements ListStore {
                 UUID.fromString(todos.getString(todos.getColumnIndex(EntryTable.COL_ID))),
                 todos.getString(todos.getColumnIndex(EntryTable.COL_NAME)),
                 todos.getInt(todos.getColumnIndex(EntryTable.COL_COMPLETE)) > 0,
+                UUID.fromString(todos.getString(todos.getColumnIndex(EntryTable.COL_PARENT))),
                 When.valueOf(todos.getString(todos.getColumnIndex(EntryTable.COL_WHEN))),
                 todos.getInt(todos.getColumnIndex(EntryTable.COL_SUB_ITEMS)),
                 todos.getInt(todos.getColumnIndex(EntryTable.COL_ITEMS_LEFT))
@@ -117,7 +118,7 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public void addEntry(String name, boolean completed, When when, UUID parentId, String parent) {
-        Item item = new Item(UUID.randomUUID(), name, completed, when);
+        Item item = new Item(UUID.randomUUID(), name, completed,parentId, when);
         addItem(item, parentId);
     }
 
@@ -220,7 +221,7 @@ public class ListStoreSQLite implements ListStore {
         private static final String SQL_DEC_INCOMPLETE = "UPDATE " + NAME + " SET " + SQL_ITEMS_LEFT_DEC +
                 " WHERE " + SQL_WHERE_ID;
 
-        private static final String[] COLS_QUERY_ALL = {COL_ID, COL_NAME, COL_COMPLETE,
+        private static final String[] COLS_QUERY_ALL = {COL_ID, COL_NAME, COL_COMPLETE, COL_PARENT,
                 COL_ITEMS_LEFT, COL_SUB_ITEMS, COL_WHEN};
         private static final String[] COLS_QUERY_NAME = {COL_NAME};
     }

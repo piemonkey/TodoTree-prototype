@@ -246,7 +246,7 @@ public class ToDoActivity extends Activity {
             public void onClick(View view) {
                 String name = itemText.getText().toString();
                 if (!name.isEmpty()) {
-                    Item newItem = new Item(name);
+                    Item newItem = new Item(name, list.getId());
                     list.addItem(newItem);
                     listStore.addItem(newItem, list.getId());
                     itemText.getText().clear();

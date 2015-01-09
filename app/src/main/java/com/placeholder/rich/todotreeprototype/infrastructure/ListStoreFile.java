@@ -358,11 +358,11 @@ public class ListStoreFile implements ListStore {
         }
 
         public Item toItem() {
-            return new Item(id, name, complete, when);
+            return new Item(id, name, complete, parentId, when);
         }
 
         public Item toItem(int subItemsCount, int itemsRemainCount) {
-            return new Item(id, name, complete, when, subItemsCount, itemsRemainCount);
+            return new Item(id, name, complete, parentId, when, subItemsCount, itemsRemainCount);
         }
 
         public String toLine() {
