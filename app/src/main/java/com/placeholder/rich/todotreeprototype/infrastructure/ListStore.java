@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface ListStore {
     void save(ListTree currentSave);
 
+    void save(TagList currentSave);
+
     ListTree load(UUID currentId);
 
     TagList loadTagged(When tag);

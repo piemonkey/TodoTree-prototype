@@ -138,6 +138,12 @@ public class ListStoreFile implements ListStore {
     }
 
     @Override
+    public void save(TagList currentSave) {
+        //Not implemented as store is deprecated
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void save(ListTree currentSave) {
         ArrayList<TodoTxtLine> usedLines = new ArrayList<TodoTxtLine>(currentSave.getItems().size());
         final String parent;

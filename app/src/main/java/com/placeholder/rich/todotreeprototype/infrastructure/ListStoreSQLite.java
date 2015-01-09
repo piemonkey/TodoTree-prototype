@@ -29,18 +29,27 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public void save(ListTree currentSave) {
-        for (Item item : currentSave.getItems()) {
-            todoDb.insertWithOnConflict(EntryTable.NAME, null, prepForDB(item, currentSave.getId()),
+        saveItemList(currentSave.getItems());
+    }
+
+    @Override
+    public void save(TagList currentSave) {
+        saveItemList(currentSave.getItems());
+    }
+
+    private void saveItemList(List<Item> items) {
+        for (Item item : items) {
+            todoDb.insertWithOnConflict(EntryTable.NAME, null, prepForDB(item),
                     SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 
-    private ContentValues prepForDB(Item item, UUID parent) {
+    private ContentValues prepForDB(Item item) {
         ContentValues values = new ContentValues();
         values.put(EntryTable.COL_ID, item.getId().toString());
         values.put(EntryTable.COL_NAME, item.getName());
         values.put(EntryTable.COL_COMPLETE, item.isComplete());
-        values.put(EntryTable.COL_PARENT, parent.toString());
+        values.put(EntryTable.COL_PARENT, item.getParent().toString());
         values.put(EntryTable.COL_ITEMS_LEFT, item.getNItemsLeft());
         values.put(EntryTable.COL_SUB_ITEMS, item.getNSubItems());
         values.put(EntryTable.COL_WHEN, item.getWhen().name());
@@ -124,7 +133,7 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public void addItem(Item item, UUID parent) {
-        todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item, parent));
+        todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item));
         String[] parentString = {parent.toString()};
         final String sqlIncrement;
         if (item.isComplete()) {
