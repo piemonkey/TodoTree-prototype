@@ -73,11 +73,28 @@ public class ToDoActivity extends Activity {
         } else {
             list = listStore.loadRoot();
         }
+        setUpWhenHeader();
         displayList();
         setUpNewItems();
     }
 
-    void displayList() {
+    private void setUpWhenHeader() {
+        final Button today = (Button) findViewById(R.id.today_button);
+        today.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startTagActivity(When.TODAY, ToDoActivity.this);
+            }
+        });
+    }
+
+    private void startTagActivity(When when, Context context) {
+        Intent intent = new Intent(context, TagActivity.class);
+        intent.putExtra(TagActivity.KEY_WHEN, when.name());
+        startActivity(intent);
+    }
+
+    private void displayList() {
         final ListView listView = (ListView) findViewById(R.id.item_list);
         listView.requestFocus();
         todoListAdapter = new ArrayAdapter<Item>(
