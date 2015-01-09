@@ -62,7 +62,7 @@ public class ListStoreSQLite implements ListStore {
                 throw new RuntimeException("Trying to load list for entry " + currentId +
                         " which does not exist.");
             }
-            List<Item> items = loadItems(selectionArgs);
+            List<Item> items = loadItemsByParent(selectionArgs);
 
             list = new ListTree(currentId, name, items);
         } else {
@@ -75,14 +75,19 @@ public class ListStoreSQLite implements ListStore {
     @Override
     public ListTree loadRoot() {
         String[] selectionArgs = {ListTree.getRootId().toString()};
-        List<Item> items = loadItems(selectionArgs);
+        List<Item> items = loadItemsByParent(selectionArgs);
 
         return ListTree.rootList(items);
     }
 
-    private List<Item> loadItems(String[] selectionArgs) {
+    private List<Item> loadItemsByParent(String[] selectionArgs) {
         Cursor todos = todoDb.query(EntryTable.NAME, EntryTable.COLS_QUERY_ALL,
                 EntryTable.SQL_WHERE_PARENT, selectionArgs, null, null, null);
+
+        return loadItems(todos);
+    }
+
+    private List<Item> loadItems(Cursor todos) {
         List<Item> items = new ArrayList<Item>(todos.getCount());
         while (todos.moveToNext()) {
             items.add(extractQueriedItem(todos));
@@ -103,8 +108,11 @@ public class ListStoreSQLite implements ListStore {
 
     @Override
     public TagList loadTagged(When tag) {
-        //TODO
-        return null;
+        String[] whereWhen = {tag.name()};
+        Cursor todos = todoDb.query(EntryTable.NAME, EntryTable.COLS_QUERY_ALL,
+                EntryTable.SQL_WHERE_WHEN, whereWhen, null, null, null);
+
+        return new TagList(tag, loadItems(todos));
     }
 
     @Override
@@ -187,6 +195,10 @@ public class ListStoreSQLite implements ListStore {
                 COL_ITEMS_LEFT, COL_ITEMS_LEFT_TYPE,
                 COL_WHEN, COL_WHEN_TYPE,
                 CONSTRAINT_PARENT_ID);
+        private static final String SQL_WHERE_PARENT = COL_PARENT + " = ?";
+        private static final String SQL_WHERE_ID = COL_ID + " = ?";
+        private static final String SQL_WHERE_WHEN = COL_WHEN + " = ?";
+
         private static final String SQL_SUB_ITEMS_INC =
                 COL_SUB_ITEMS + " = " + COL_SUB_ITEMS + " + 1";
         private static final String SQL_ITEMS_LEFT_INC =
@@ -195,8 +207,6 @@ public class ListStoreSQLite implements ListStore {
                 COL_SUB_ITEMS + " = " + COL_SUB_ITEMS + " - 1";
         private static final String SQL_ITEMS_LEFT_DEC =
                 COL_ITEMS_LEFT + " = " + COL_ITEMS_LEFT + " - 1";
-        private static final String SQL_WHERE_PARENT = COL_PARENT + " = ?";
-        private static final String SQL_WHERE_ID = COL_ID + " = ?";
         private static final String SQL_INC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
                 SQL_SUB_ITEMS_INC + ", " + SQL_ITEMS_LEFT_INC + " WHERE " + SQL_WHERE_ID;
         private static final String SQL_DEC_SUB_AND_INCOMPLETE = "UPDATE " + NAME + " SET " +
