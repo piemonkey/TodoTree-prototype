@@ -63,6 +63,17 @@ public class TagActivity extends Activity {
 
         list = listStore.loadTagged(when);
         displayList();
+        setUpWhenHeader();
+    }
+
+    private void setUpWhenHeader() {
+        final Button lists = (Button) findViewById(R.id.back_button);
+        lists.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TagActivity.this.finish();
+            }
+        });
     }
 
     void displayList() {
