@@ -66,6 +66,10 @@ public class Item {
         when = When.TOMORROW;
     }
 
+    public void dontDoNow() {
+        when = When.NA;
+    }
+
     public int getNSubItems() {
         return nSubItems;
     }

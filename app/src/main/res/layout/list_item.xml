@@ -12,6 +12,13 @@
         android:longClickable="true"
         android:textSize="20sp"/>
     <Button
+        android:id="@+id/button_list_today"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:text="T"
+        android:longClickable="true" />
+    <Button
         android:id="@+id/button_list_sublist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -124,8 +124,18 @@ public class ToDoActivity extends Activity {
                     itemText.setText(itemText.getText() + " (" + item.getNItemsLeft() + "/"
                             + item.getNSubItems() + ")");
                 }
-                Button button = (Button) convertView.findViewById(R.id.button_list_sublist);
-                button.setOnClickListener(new View.OnClickListener() {
+                final Button todayButton = (Button) convertView.findViewById(R.id.button_list_today);
+                if (item.getWhen() == When.TODAY) {
+                    todayButton.setPaintFlags((itemText.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG));
+                }
+                todayButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onClickTodayButton(item, todayButton);
+                    }
+                });
+                Button subListButton = (Button) convertView.findViewById(R.id.button_list_sublist);
+                subListButton.setOnClickListener(new View.OnClickListener() {
                     private EditText newItemName;
 
                     @Override
@@ -241,6 +251,16 @@ public class ToDoActivity extends Activity {
         item.toggleComplete();
         listStore.saveUpdatedCompleteness(item, list.getId());
         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+    }
+
+    private void onClickTodayButton(Item item, Button button) {
+        if (item.getWhen() == When.NA) {
+            item.doToday();
+        } else {
+            item.dontDoNow();
+        }
+        listStore.save(item);
+        button.setPaintFlags(button.getPaintFlags() ^ Paint.UNDERLINE_TEXT_FLAG);
     }
 
     private void openActivityForList(Item item, Context context) {
