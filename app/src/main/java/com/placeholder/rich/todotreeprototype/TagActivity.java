@@ -27,6 +27,7 @@ import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TagActivity extends Activity {
@@ -197,20 +198,44 @@ public class TagActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.to_do, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        if (id == R.id.action_clear_completed) {
+            showClearCompetedDialog();
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(menuItem);
     }
+
+    private void showClearCompetedDialog() {
+        AlertDialog.Builder clearDialogBuilder = new AlertDialog.Builder(this);
+        clearDialogBuilder.setTitle("Deleting completed items");
+        clearDialogBuilder.setMessage("Are you sure?");
+        clearDialogBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteCompletedItems();
+            }
+        });
+        clearDialogBuilder.show();
+    }
+
+    private void deleteCompletedItems() {
+        List<Item> toDelete = new ArrayList<Item>();
+        for (Item item : list.getItems()) {
+            if (item.isComplete() && !item.hasSubItems()) {
+                toDelete.add(item);
+            }
+        }
+        for (Item item : toDelete) {
+            list.deleteItem(item);
+            listStore.delete(item, item.getParent());
+        }
+        todoListAdapter.notifyDataSetChanged();
+    }
+
 }
