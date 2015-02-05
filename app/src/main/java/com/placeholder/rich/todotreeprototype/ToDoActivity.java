@@ -221,7 +221,7 @@ public class ToDoActivity extends Activity {
                                 R.layout.dialog_text_entry_alert, listView, false));
                         AlertDialog newSubItem = itemEditBuilder.show();
                         newName = (EditText) newSubItem.findViewById(R.id.edit_text_alert);
-                        newName.setHint("New name...");
+                        newName.setText(item.getName());
                     }
 
                     private void onMenuItemClickTodoDelete() {
