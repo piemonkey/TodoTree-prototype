@@ -39,9 +39,14 @@ public class ListStoreSQLite implements ListStore {
 
     private void saveItemList(List<Item> items) {
         for (Item item : items) {
-            todoDb.insertWithOnConflict(EntryTable.NAME, null, prepForDB(item),
-                    SQLiteDatabase.CONFLICT_REPLACE);
+            save(item);
         }
+    }
+
+    @Override
+    public void save(Item item) {
+        todoDb.insertWithOnConflict(EntryTable.NAME, null, prepForDB(item),
+                    SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     private ContentValues prepForDB(Item item) {

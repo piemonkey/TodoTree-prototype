@@ -12,6 +12,8 @@ public interface ListStore {
 
     void save(TagList currentSave);
 
+    void save(Item item);
+
     ListTree load(UUID currentId);
 
     TagList loadTagged(When tag);
