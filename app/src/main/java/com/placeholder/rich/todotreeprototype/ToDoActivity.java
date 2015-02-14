@@ -98,8 +98,7 @@ public class ToDoActivity extends Activity {
     private void displayList() {
         final ListView listView = (ListView) findViewById(R.id.item_list);
         listView.requestFocus();
-        todoListAdapter = new ArrayAdapter<Item>(
-                getApplicationContext(), R.layout.list_item, list.getItems()) {
+        todoListAdapter = new ArrayAdapter<Item>(this, R.layout.list_item, list.getItems()) {
             @Override
             public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
@@ -156,8 +155,7 @@ public class ToDoActivity extends Activity {
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             String name = newItemName.getText().toString();
                                             if (!name.isEmpty()) {
-                                                listStore.addEntry(name, false, When.NA,
-                                                        item.getId(), item.getName());
+                                                listStore.addItem(new Item(name, item.getId()));
                                                 openActivityForList(item, getContext());
                                             }
                                         }
@@ -234,7 +232,7 @@ public class ToDoActivity extends Activity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 list.deleteItem(item);
-                                listStore.delete(item, list.getId());
+                                listStore.delete(item);
                                 todoListAdapter.notifyDataSetChanged();
                             }
                         });
@@ -250,7 +248,7 @@ public class ToDoActivity extends Activity {
 
     private void onClickTodoText(Item item, TextView itemText) {
         item.toggleComplete();
-        listStore.saveUpdatedCompleteness(item, list.getId());
+        listStore.saveUpdatedCompleteness(item);
         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
@@ -286,7 +284,7 @@ public class ToDoActivity extends Activity {
                 if (!name.isEmpty()) {
                     Item newItem = new Item(name, list.getId());
                     list.addItem(newItem);
-                    listStore.addItem(newItem, list.getId());
+                    listStore.addItem(newItem);
                     itemText.getText().clear();
                     todoListAdapter.notifyDataSetChanged();
                 }
@@ -342,7 +340,7 @@ public class ToDoActivity extends Activity {
         }
         for (Item item : toDelete) {
             list.deleteItem(item);
-            listStore.delete(item, item.getParent());
+            listStore.delete(item);
         }
         todoListAdapter.notifyDataSetChanged();
     }

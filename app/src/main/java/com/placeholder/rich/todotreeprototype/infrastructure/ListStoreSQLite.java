@@ -131,15 +131,9 @@ public class ListStoreSQLite implements ListStore {
     }
 
     @Override
-    public void addEntry(String name, boolean completed, When when, UUID parentId, String parent) {
-        Item item = new Item(UUID.randomUUID(), name, completed,parentId, when);
-        addItem(item, parentId);
-    }
-
-    @Override
-    public void addItem(Item item, UUID parent) {
+    public void addItem(Item item) {
         todoDb.insertOrThrow(EntryTable.NAME, null, prepForDB(item));
-        String[] parentString = {parent.toString()};
+        String[] parentString = {item.getParent().toString()};
         final String sqlIncrement;
         if (item.isComplete()) {
             sqlIncrement = EntryTable.SQL_INC_SUB;
@@ -150,7 +144,7 @@ public class ListStoreSQLite implements ListStore {
     }
 
     @Override
-    public void saveUpdatedCompleteness(Item item, UUID parent) {
+    public void saveUpdatedCompleteness(Item item) {
         final ContentValues updatedValues = new ContentValues(1);
         final String parentUpdate;
         if (item.isComplete()) {
@@ -162,12 +156,12 @@ public class ListStoreSQLite implements ListStore {
         }
         String[] whereId = {item.getId().toString()};
         todoDb.update(EntryTable.NAME, updatedValues, EntryTable.SQL_WHERE_ID, whereId);
-        String[] whereParent = {parent.toString()};
+        String[] whereParent = {item.getParent().toString()};
         todoDb.execSQL(parentUpdate, whereParent);
     }
 
     @Override
-    public void delete(Item item, UUID parent) {
+    public void delete(Item item) {
         final String parentUpdate;
         if (item.isComplete()) {
             parentUpdate = EntryTable.SQL_DEC_SUB;
@@ -176,7 +170,7 @@ public class ListStoreSQLite implements ListStore {
         }
         String[] whereId = {item.getId().toString()};
         todoDb.delete(EntryTable.NAME, EntryTable.SQL_WHERE_ID, whereId);
-        String[] whereParent = {parent.toString()};
+        String[] whereParent = {item.getParent().toString()};
         todoDb.execSQL(parentUpdate, whereParent);
     }
 

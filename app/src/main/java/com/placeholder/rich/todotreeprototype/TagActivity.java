@@ -79,8 +79,7 @@ public class TagActivity extends Activity {
 
     void displayList() {
         final ListView listView = (ListView) findViewById(R.id.item_list);
-        todoListAdapter = new ArrayAdapter<Item>(
-                getApplicationContext(), R.layout.tag_list_item, list.getItems()) {
+        todoListAdapter = new ArrayAdapter<Item>(this, R.layout.tag_list_item, list.getItems()) {
             @Override
             public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
@@ -170,7 +169,7 @@ public class TagActivity extends Activity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 list.deleteItem(item);
-                                listStore.delete(item, item.getParent());
+                                listStore.delete(item);
                                 todoListAdapter.notifyDataSetChanged();
                             }
                         });
@@ -186,7 +185,7 @@ public class TagActivity extends Activity {
 
     private void onClickTodoText(Item item, TextView itemText) {
         item.toggleComplete();
-        listStore.saveUpdatedCompleteness(item, item.getParent());
+        listStore.saveUpdatedCompleteness(item);
         itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
@@ -233,7 +232,7 @@ public class TagActivity extends Activity {
         }
         for (Item item : toDelete) {
             list.deleteItem(item);
-            listStore.delete(item, item.getParent());
+            listStore.delete(item);
         }
         todoListAdapter.notifyDataSetChanged();
     }

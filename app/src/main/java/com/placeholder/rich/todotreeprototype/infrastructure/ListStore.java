@@ -20,11 +20,9 @@ public interface ListStore {
 
     ListTree loadRoot();
 
-    void addEntry(String name, boolean completed, When when, UUID parentId, String parent);
+    void addItem(Item item);
 
-    void addItem(Item item, UUID parent);
+    void saveUpdatedCompleteness(Item item);
 
-    void saveUpdatedCompleteness(Item item, UUID parent);
-
-    void delete(Item item, UUID parent);
+    void delete(Item item);
 }
