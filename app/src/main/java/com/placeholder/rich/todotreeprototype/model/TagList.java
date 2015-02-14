@@ -3,7 +3,6 @@ package com.placeholder.rich.todotreeprototype.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public class TagList {
 
@@ -21,10 +20,6 @@ public class TagList {
 
     public List<Item> getItems() {
         return Collections.unmodifiableList(items);
-    }
-
-    public void addItem(Item newItem) {
-        items.add(newItem);
     }
 
     public void deleteItem(Item toDelete) {

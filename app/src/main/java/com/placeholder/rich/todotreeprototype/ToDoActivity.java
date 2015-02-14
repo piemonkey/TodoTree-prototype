@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -293,7 +294,7 @@ public class ToDoActivity extends Activity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         int numberOfCrumbs = listBreadcrumb.size();
         String[] crumbs = new String[numberOfCrumbs];
         for (int i = 0; i < numberOfCrumbs; i++) {

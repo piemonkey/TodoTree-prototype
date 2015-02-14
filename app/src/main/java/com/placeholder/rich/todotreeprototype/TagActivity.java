@@ -2,11 +2,10 @@ package com.placeholder.rich.todotreeprototype;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,13 +21,11 @@ import android.widget.TextView;
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreSQLite;
 import com.placeholder.rich.todotreeprototype.model.Item;
-import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class TagActivity extends Activity {
 
@@ -190,7 +187,7 @@ public class TagActivity extends Activity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString(KEY_WHEN, when.name());
         super.onSaveInstanceState(outState);
     }

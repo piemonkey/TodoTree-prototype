@@ -51,7 +51,4 @@ public class ListTree {
         return name;
     }
 
-    public boolean isRoot() {
-        return ID_ROOT.equals(id);
-    }
 }

@@ -76,6 +76,7 @@ public class ListStoreSQLite implements ListStore {
                 throw new RuntimeException("Trying to load list for entry " + currentId +
                         " which does not exist.");
             }
+            parentResult.close();
             List<Item> items = loadItemsByParent(selectionArgs);
 
             list = new ListTree(currentId, name, items);
@@ -97,8 +98,10 @@ public class ListStoreSQLite implements ListStore {
     private List<Item> loadItemsByParent(String[] selectionArgs) {
         Cursor todos = todoDb.query(EntryTable.NAME, EntryTable.COLS_QUERY_ALL,
                 EntryTable.SQL_WHERE_PARENT, selectionArgs, null, null, null);
+        List<Item> items = loadItems(todos);
+        todos.close();
 
-        return loadItems(todos);
+        return items;
     }
 
     private List<Item> loadItems(Cursor todos) {

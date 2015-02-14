@@ -15,10 +15,6 @@ public class Item {
         this(UUID.randomUUID(), name, false, parent, When.NA, 0, 0);
     }
 
-    public Item(UUID id, String name, boolean complete, UUID parent, When when) {
-        this(id, name, complete, parent, when, 0, 0);
-    }
-
     public Item(UUID id, String name, boolean complete, UUID parent, When when, int nSubItems,
                 int nItemsLeft) {
         this.id = id;
@@ -62,10 +58,6 @@ public class Item {
         when = When.TODAY;
     }
 
-    public void doTomorrow() {
-        when = When.TOMORROW;
-    }
-
     public void dontDoNow() {
         when = When.NA;
     }
@@ -74,16 +66,8 @@ public class Item {
         return nSubItems;
     }
 
-    public void setNSubItems(int nSubItems) {
-        this.nSubItems = nSubItems;
-    }
-
     public int getNItemsLeft() {
         return nItemsLeft;
-    }
-
-    public void setNItemsLeft(int nItemsLeft) {
-        this.nItemsLeft = nItemsLeft;
     }
 
     public boolean hasSubItems() {
