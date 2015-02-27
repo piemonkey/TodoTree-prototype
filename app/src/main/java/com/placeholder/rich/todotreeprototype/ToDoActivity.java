@@ -241,17 +241,8 @@ public class ToDoActivity extends AbstractListActivity {
         };
     }
 
-    private void onClickTodayButton(Item item, Button button) {
-        if (item.getWhen() == When.NA) {
-            item.doToday();
-        } else {
-            item.dontDoNow();
-        }
-        listStore.save(item);
-        button.setPaintFlags(button.getPaintFlags() ^ Paint.UNDERLINE_TEXT_FLAG);
-    }
-
-    private void openActivityForList(Item item, Context context) {
+    @Override
+    protected void openActivityForList(Item item, Context context) {
         Intent intent = new Intent(context, ToDoActivity.class);
         int numberOfCrumbs = listBreadcrumb.size();
         String[] nextCrumbs = new String[numberOfCrumbs + 1];

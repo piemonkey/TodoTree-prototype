@@ -2,19 +2,23 @@ package com.placeholder.rich.todotreeprototype;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
 import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreSQLite;
 import com.placeholder.rich.todotreeprototype.model.Item;
 import com.placeholder.rich.todotreeprototype.model.ItemList;
+import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +57,37 @@ public abstract class AbstractListActivity extends Activity {
         listView.setAdapter(todoListAdapter);
     }
 
+    protected void onClickTodayButton(Item item, Button button) {
+        if (item.hasSubItems()) {
+            Toast.makeText(this, "Feature coming soon...", Toast.LENGTH_SHORT).show();
+        } else {
+            if (item.getWhen() == When.NA) {
+                item.doToday();
+            } else {
+                item.dontDoNow();
+            }
+            listStore.save(item);
+            button.setPaintFlags(button.getPaintFlags() ^ Paint.UNDERLINE_TEXT_FLAG);
+        }
+    }
+
     protected void onClickTodoText(Item item, TextView itemText) {
-        item.toggleComplete();
-        listStore.saveUpdatedCompleteness(item);
-        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+        if (item.hasSubItems()) {
+            openActivityForList(item, this);
+        } else {
+            item.toggleComplete();
+            listStore.saveUpdatedCompleteness(item);
+            itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+    }
+
+    protected void openActivityForList(Item item, Context context) {
+        if (item.hasSubItems() && item.getWhen() != When.NA) {
+            item.dontDoNow();
+            listStore.save(item);
+        }
+        //TODO: Need to figure out a way to launch sub item lists in today view
+        throw new UnsupportedOperationException("Somehow a sub-itemed thing got into today list");
     }
 
     @Override
