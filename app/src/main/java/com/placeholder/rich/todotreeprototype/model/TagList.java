@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TagList {
+public class TagList implements ItemList {
 
     private final When tag;
     private final List<Item> items;

@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class ListTree {
+public class ListTree implements ItemList {
 
     private static final UUID ID_ROOT = new UUID(0L, 0L);
 

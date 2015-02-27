@@ -1,6 +1,5 @@
 package com.placeholder.rich.todotreeprototype;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +8,6 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,26 +18,20 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
-import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreSQLite;
 import com.placeholder.rich.todotreeprototype.model.Item;
+import com.placeholder.rich.todotreeprototype.model.ItemList;
 import com.placeholder.rich.todotreeprototype.model.ListTree;
 import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-public class ToDoActivity extends Activity {
+public class ToDoActivity extends AbstractListActivity {
 
     private static final String KEY_LIST_BREADCRUMB = "ListBreadcrumb";
 
-    private ListStore listStore;
-
     private ListTree list;
     private ArrayList<UUID> listBreadcrumb;
-
-    private BaseAdapter todoListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +51,12 @@ public class ToDoActivity extends Activity {
         } else {
             listBreadcrumb = new ArrayList<UUID>();
         }
-        listStore = new ListStoreSQLite(this);
 
         setContentView(R.layout.activity_to_do);
     }
 
     @Override
     protected void onStart() {
-        super.onStart();
-
         int size = listBreadcrumb.size();
         if (size > 0) {
             final UUID currentId = listBreadcrumb.get(size - 1);
@@ -75,12 +64,12 @@ public class ToDoActivity extends Activity {
         } else {
             list = listStore.loadRoot();
         }
-        setUpWhenHeader();
-        displayList();
         setUpNewItems();
+        super.onStart();
     }
 
-    private void setUpWhenHeader() {
+    @Override
+    protected void setUpWhenHeader() {
         final Button today = (Button) findViewById(R.id.today_button);
         today.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,16 +79,20 @@ public class ToDoActivity extends Activity {
         });
     }
 
+    @Override
+    protected ItemList getList() {
+        return list;
+    }
+
     private void startTagActivity(When when, Context context) {
         Intent intent = new Intent(context, TagActivity.class);
         intent.putExtra(TagActivity.KEY_WHEN, when.name());
         startActivity(intent);
     }
 
-    private void displayList() {
-        final ListView listView = (ListView) findViewById(R.id.item_list);
-        listView.requestFocus();
-        todoListAdapter = new ArrayAdapter<Item>(this, R.layout.list_item, list.getItems()) {
+    @Override
+    protected BaseAdapter setUpAdapterForList(final ListView listView) {
+        return new ArrayAdapter<Item>(this, R.layout.list_item, list.getItems()) {
             @Override
             public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
@@ -246,13 +239,6 @@ public class ToDoActivity extends Activity {
                 return convertView;
             }
         };
-        listView.setAdapter(todoListAdapter);
-    }
-
-    private void onClickTodoText(Item item, TextView itemText) {
-        item.toggleComplete();
-        listStore.saveUpdatedCompleteness(item);
-        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     private void onClickTodayButton(Item item, Button button) {
@@ -304,48 +290,6 @@ public class ToDoActivity extends Activity {
         }
         outState.putStringArray(KEY_LIST_BREADCRUMB, crumbs);
         super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.to_do, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        int id = menuItem.getItemId();
-        if (id == R.id.action_clear_completed) {
-            showClearCompetedDialog();
-        }
-        return super.onOptionsItemSelected(menuItem);
-    }
-
-    private void showClearCompetedDialog() {
-        AlertDialog.Builder clearDialogBuilder = new AlertDialog.Builder(this);
-        clearDialogBuilder.setTitle("Deleting completed items");
-        clearDialogBuilder.setMessage("Are you sure?");
-        clearDialogBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                deleteCompletedItems();
-            }
-        });
-        clearDialogBuilder.show();
-    }
-
-    private void deleteCompletedItems() {
-        List<Item> toDelete = new ArrayList<Item>();
-        for (Item item : list.getItems()) {
-            if (item.isComplete() && !item.hasSubItems()) {
-                toDelete.add(item);
-            }
-        }
-        for (Item item : toDelete) {
-            list.deleteItem(item);
-            listStore.delete(item);
-        }
-        todoListAdapter.notifyDataSetChanged();
     }
 
 }

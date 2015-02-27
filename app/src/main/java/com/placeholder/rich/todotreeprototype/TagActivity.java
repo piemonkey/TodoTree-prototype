@@ -1,13 +1,11 @@
 package com.placeholder.rich.todotreeprototype;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,25 +16,17 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.placeholder.rich.todotreeprototype.infrastructure.ListStore;
-import com.placeholder.rich.todotreeprototype.infrastructure.ListStoreSQLite;
 import com.placeholder.rich.todotreeprototype.model.Item;
+import com.placeholder.rich.todotreeprototype.model.ItemList;
 import com.placeholder.rich.todotreeprototype.model.TagList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class TagActivity extends Activity {
+public class TagActivity extends AbstractListActivity {
 
     public static final String KEY_WHEN = "WhenList";
 
-    private ListStore listStore;
-
     private TagList list;
     private When when;
-
-    private BaseAdapter todoListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,21 +40,18 @@ public class TagActivity extends Activity {
             when = When.TODAY;
         }
 
-        listStore = new ListStoreSQLite(this);
-
         setContentView(R.layout.activity_tag);
     }
 
     @Override
     protected void onStart() {
-        super.onStart();
-
         list = listStore.loadTagged(when);
-        displayList();
-        setUpWhenHeader();
+
+        super.onStart();
     }
 
-    private void setUpWhenHeader() {
+    @Override
+    protected void setUpWhenHeader() {
         final Button lists = (Button) findViewById(R.id.back_button);
         lists.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,9 +61,14 @@ public class TagActivity extends Activity {
         });
     }
 
-    void displayList() {
-        final ListView listView = (ListView) findViewById(R.id.item_list);
-        todoListAdapter = new ArrayAdapter<Item>(this, R.layout.tag_list_item, list.getItems()) {
+    @Override
+    protected ItemList getList() {
+        return list;
+    }
+
+    @Override
+    protected BaseAdapter setUpAdapterForList(final ListView listView) {
+        return new ArrayAdapter<Item>(this, R.layout.tag_list_item, list.getItems()) {
             @Override
             public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
@@ -179,61 +171,12 @@ public class TagActivity extends Activity {
                 return convertView;
             }
         };
-        listView.setAdapter(todoListAdapter);
-    }
-
-    private void onClickTodoText(Item item, TextView itemText) {
-        item.toggleComplete();
-        listStore.saveUpdatedCompleteness(item);
-        itemText.setPaintFlags(itemText.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString(KEY_WHEN, when.name());
         super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.to_do, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        int id = menuItem.getItemId();
-        if (id == R.id.action_clear_completed) {
-            showClearCompetedDialog();
-        }
-        return super.onOptionsItemSelected(menuItem);
-    }
-
-    private void showClearCompetedDialog() {
-        AlertDialog.Builder clearDialogBuilder = new AlertDialog.Builder(this);
-        clearDialogBuilder.setTitle("Deleting completed items");
-        clearDialogBuilder.setMessage("Are you sure?");
-        clearDialogBuilder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                deleteCompletedItems();
-            }
-        });
-        clearDialogBuilder.show();
-    }
-
-    private void deleteCompletedItems() {
-        List<Item> toDelete = new ArrayList<Item>();
-        for (Item item : list.getItems()) {
-            if (item.isComplete() && !item.hasSubItems()) {
-                toDelete.add(item);
-            }
-        }
-        for (Item item : toDelete) {
-            list.deleteItem(item);
-            listStore.delete(item);
-        }
-        todoListAdapter.notifyDataSetChanged();
     }
 
 }
