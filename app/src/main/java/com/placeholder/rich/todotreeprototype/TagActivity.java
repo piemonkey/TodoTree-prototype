@@ -91,6 +91,8 @@ public class TagActivity extends Activity {
                 itemText.setText(item.getName());
                 if (item.isComplete()) {
                     itemText.setPaintFlags(itemText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    itemText.setPaintFlags(itemText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
                 }
                 itemText.setOnClickListener(new View.OnClickListener() {
                     @Override
