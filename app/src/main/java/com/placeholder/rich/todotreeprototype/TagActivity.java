@@ -51,6 +51,11 @@ public class TagActivity extends AbstractListActivity {
     }
 
     @Override
+    protected void changeActionbarText() {
+        setTitle("Today");
+    }
+
+    @Override
     protected void setUpWhenHeader() {
         final Button lists = (Button) findViewById(R.id.back_button);
         lists.setOnClickListener(new View.OnClickListener() {

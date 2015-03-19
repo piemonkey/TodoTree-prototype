@@ -31,6 +31,10 @@ public class ListTree implements ItemList {
         return ID_ROOT;
     }
 
+    public boolean isRoot() {
+        return ID_ROOT.equals(id);
+    }
+
     public List<Item> getItems() {
         return Collections.unmodifiableList(items);
     }

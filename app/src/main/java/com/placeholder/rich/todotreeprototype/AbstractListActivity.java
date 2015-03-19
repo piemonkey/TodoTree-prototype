@@ -29,6 +29,8 @@ public abstract class AbstractListActivity extends Activity {
 
     protected BaseAdapter todoListAdapter;
 
+    protected abstract void changeActionbarText();
+
     protected abstract void setUpWhenHeader();
 
     protected abstract ItemList getList();
@@ -46,6 +48,7 @@ public abstract class AbstractListActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
+        changeActionbarText();
         setUpWhenHeader();
         displayList();
     }

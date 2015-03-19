@@ -69,6 +69,13 @@ public class ToDoActivity extends AbstractListActivity {
     }
 
     @Override
+    protected void changeActionbarText() {
+        if(!list.isRoot()) {
+            setTitle(list.getName());
+        }
+    }
+
+    @Override
     protected void setUpWhenHeader() {
         final Button today = (Button) findViewById(R.id.today_button);
         today.setOnClickListener(new View.OnClickListener() {
