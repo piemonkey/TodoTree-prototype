@@ -96,6 +96,16 @@ public class TagActivity extends AbstractListActivity {
                     itemText.setText(itemText.getText() + " (" + item.getNItemsLeft() + "/"
                             + item.getNSubItems() + ")");
                 }
+                final Button whenButton = (Button) convertView.findViewById(R.id.button_list_today);
+                setWhenButtonBackground(whenButton, item);
+                whenButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onClickTodayButton(item, whenButton);
+                        list.deleteItem(item);
+                        todoListAdapter.notifyDataSetChanged();
+                    }
+                });
 
                 convertView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                     private EditText newName;

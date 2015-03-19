@@ -11,4 +11,11 @@
         android:layout_weight="1"
         android:longClickable="true"
         android:textSize="20sp"/>
+    <Button
+        android:id="@+id/button_list_today"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_weight="0"
+        android:longClickable="true"
+        android:background="@drawable/ic_when_tag_clear"/>
 </LinearLayout>
