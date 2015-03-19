@@ -57,6 +57,8 @@ public abstract class AbstractListActivity extends Activity {
         listView.setAdapter(todoListAdapter);
     }
 
+    protected void setWhenButtonBackground(Button whenButton, Item item){}
+
     protected void onClickTodayButton(Item item, Button button) {
         if (item.hasSubItems()) {
             Toast.makeText(this, "Feature coming soon...", Toast.LENGTH_SHORT).show();
@@ -67,7 +69,7 @@ public abstract class AbstractListActivity extends Activity {
                 item.dontDoNow();
             }
             listStore.save(item);
-            button.setPaintFlags(button.getPaintFlags() ^ Paint.UNDERLINE_TEXT_FLAG);
+            setWhenButtonBackground(button, item);
         }
     }
 

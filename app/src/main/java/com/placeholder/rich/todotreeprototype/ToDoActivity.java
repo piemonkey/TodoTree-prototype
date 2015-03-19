@@ -121,9 +121,7 @@ public class ToDoActivity extends AbstractListActivity {
                             + item.getNSubItems() + ")");
                 }
                 final Button todayButton = (Button) convertView.findViewById(R.id.button_list_today);
-                if (item.getWhen() == When.TODAY) {
-                    todayButton.setPaintFlags((itemText.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG));
-                }
+                setWhenButtonBackground(todayButton, item);
                 todayButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -239,6 +237,17 @@ public class ToDoActivity extends AbstractListActivity {
                 return convertView;
             }
         };
+    }
+
+    @Override
+    protected void setWhenButtonBackground(Button whenButton, Item item) {
+        if (item.getWhen() == When.NA) {
+            whenButton.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.ic_when_tag_inactive));
+        } else if (item.getWhen() == When.TODAY) {
+            whenButton.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.ic_when_tag_active));
+        }
     }
 
     @Override
