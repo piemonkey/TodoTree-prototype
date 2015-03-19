@@ -44,12 +44,12 @@ public class ToDoActivity extends AbstractListActivity {
             idStrings = getIntent().getStringArrayExtra(KEY_LIST_BREADCRUMB);
         }
         if (idStrings != null) {
-            listBreadcrumb = new ArrayList<UUID>(idStrings.length);
+            listBreadcrumb = new ArrayList<>(idStrings.length);
             for (String idString : idStrings) {
                 listBreadcrumb.add(UUID.fromString(idString));
             }
         } else {
-            listBreadcrumb = new ArrayList<UUID>();
+            listBreadcrumb = new ArrayList<>();
         }
 
         setContentView(R.layout.activity_to_do);

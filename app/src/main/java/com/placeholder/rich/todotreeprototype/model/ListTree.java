@@ -20,7 +20,7 @@ public class ListTree implements ItemList {
             this.name = name;
         }
         this.id = id;
-        this.items = new ArrayList<Item>(items);
+        this.items = new ArrayList<>(items);
     }
 
     public static ListTree rootList(List<Item> items) {
