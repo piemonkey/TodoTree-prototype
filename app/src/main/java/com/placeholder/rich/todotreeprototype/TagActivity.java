@@ -28,6 +28,10 @@ public class TagActivity extends AbstractListActivity {
     private TagList list;
     private When when;
 
+    private String titleText;
+    private Button backButton;
+    private Button otherWhenButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +45,16 @@ public class TagActivity extends AbstractListActivity {
         }
 
         setContentView(R.layout.activity_tag);
+
+        if (when == When.TODAY) {
+            titleText = getString(R.string.nav_tag_today);
+            backButton = (Button) findViewById(R.id.header_button_left);
+            otherWhenButton = (Button) findViewById(R.id.header_button_right);
+        } else {
+            titleText = getString(R.string.nav_tag_tomorrow);
+            backButton = (Button) findViewById(R.id.header_button_right);
+            otherWhenButton = (Button) findViewById(R.id.header_button_left);
+        }
     }
 
     @Override
@@ -52,13 +66,14 @@ public class TagActivity extends AbstractListActivity {
 
     @Override
     protected void changeActionbarText() {
-        setTitle("Today");
+        setTitle(titleText);
     }
 
     @Override
     protected void setUpWhenHeader() {
-        final Button lists = (Button) findViewById(R.id.back_button);
-        lists.setOnClickListener(new View.OnClickListener() {
+        backButton = (Button) findViewById(R.id.header_button_left);
+        backButton.setText(R.string.nav_back_to_list);
+        backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 TagActivity.this.finish();
@@ -101,7 +116,7 @@ public class TagActivity extends AbstractListActivity {
                     itemText.setText(itemText.getText() + " (" + item.getNItemsLeft() + "/"
                             + item.getNSubItems() + ")");
                 }
-                final Button whenButton = (Button) convertView.findViewById(R.id.button_list_today);
+                final Button whenButton = (Button) convertView.findViewById(R.id.button_list_when);
                 setWhenButtonBackground(whenButton, item);
                 whenButton.setOnClickListener(new View.OnClickListener() {
                     @Override

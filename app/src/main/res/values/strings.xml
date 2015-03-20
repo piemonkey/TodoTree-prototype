@@ -2,7 +2,10 @@
 <resources>
 
     <string name="app_name">Todo Tree Prototype</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="nav_back_to_list">Lists</string>
+    <string name="nav_tag_today">Today</string>
+    <string name="nav_tag_tomorrow">Tomorrow</string>
 
 </resources>

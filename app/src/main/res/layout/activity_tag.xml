@@ -10,21 +10,20 @@
     tools:context=".ToDoActivity">
 
     <LinearLayout
-        android:id="@+id/back_and_other_tag"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:id="@+id/back_button"
+            android:id="@+id/header_button_left"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Lists"/>
+            android:text="@string/nav_tag_today"/>
         <Button
-            android:id="@+id/tomorrow_button"
+            android:id="@+id/header_button_right"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Tomorrow"/>
+            android:text="@string/nav_tag_tomorrow"/>
     </LinearLayout>
     <ListView
         android:id="@+id/item_list"
