@@ -83,7 +83,8 @@ public class TagActivity extends AbstractListActivity {
             @Override
             public void onClick(View view) {
                 When otherWhen = When.TODAY == when? When.TOMORROW : When.TODAY;
-                startTagActivity(otherWhen, TagActivity.this);
+                setIntent(generateWhenIntent(otherWhen, TagActivity.this));
+                recreate();
             }
         });
     }

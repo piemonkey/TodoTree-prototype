@@ -72,9 +72,13 @@ public abstract class AbstractListActivity extends Activity {
     }
 
     protected void startTagActivity(When when, Context context) {
+        startActivity(generateWhenIntent(when, context));
+    }
+
+    protected Intent generateWhenIntent(When when, Context context) {
         Intent intent = new Intent(context, TagActivity.class);
         intent.putExtra(TagActivity.KEY_WHEN, when.name());
-        startActivity(intent);
+        return intent;
     }
 
 
