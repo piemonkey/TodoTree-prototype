@@ -1,7 +1,9 @@
 package com.placeholder.rich.todotreeprototype;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,6 +24,7 @@ import com.placeholder.rich.todotreeprototype.model.ItemList;
 import com.placeholder.rich.todotreeprototype.model.When;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public abstract class AbstractListActivity extends Activity {
@@ -42,7 +45,30 @@ public abstract class AbstractListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setWhenRollover();
         listStore = new ListStoreSQLite(this);
+    }
+
+    private void setWhenRollover() {
+        Intent rolloverIntent = new Intent(
+                WhenRolloverService.ACTION_ROLLOVER_DAY, null, this, WhenRolloverService.class);
+        PendingIntent pendingRollover =
+                PendingIntent.getService(this, WhenRolloverService.REQUEST_ROLLOVER_SCHEDULE,
+                        rolloverIntent, PendingIntent.FLAG_NO_CREATE);
+        if (pendingRollover == null) {
+            //Not created so create and schedule
+            Calendar next = Calendar.getInstance();
+            next.set(Calendar.HOUR_OF_DAY, 0);
+            next.set(Calendar.MINUTE, 0);
+            next.set(Calendar.SECOND, 0);
+            next.add(Calendar.DAY_OF_WEEK, 1);
+            pendingRollover =
+                    PendingIntent.getService(this, WhenRolloverService.REQUEST_ROLLOVER_SCHEDULE,
+                            rolloverIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            alarmManager.setInexactRepeating(AlarmManager.RTC, next.getTimeInMillis(),
+                    AlarmManager.INTERVAL_DAY, pendingRollover);
+        }
     }
 
     @Override

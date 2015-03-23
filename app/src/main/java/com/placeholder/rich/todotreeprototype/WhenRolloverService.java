@@ -12,6 +12,7 @@ import com.placeholder.rich.todotreeprototype.model.When;
 public class WhenRolloverService extends IntentService {
     public static final String ACTION_ROLLOVER_DAY =
             "com.placeholder.rich.todotreeprototype.action.ROLLOVER_DAY";
+    public static final int REQUEST_ROLLOVER_SCHEDULE = 1;
 
     private ListStore listStore;
 
