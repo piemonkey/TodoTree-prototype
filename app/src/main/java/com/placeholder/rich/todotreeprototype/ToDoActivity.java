@@ -84,17 +84,18 @@ public class ToDoActivity extends AbstractListActivity {
                 startTagActivity(When.TODAY, ToDoActivity.this);
             }
         });
+        final Button tomorrow = (Button) findViewById(R.id.tomorrow_button);
+        tomorrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startTagActivity(When.TOMORROW, ToDoActivity.this);
+            }
+        });
     }
 
     @Override
     protected ItemList getList() {
         return list;
-    }
-
-    private void startTagActivity(When when, Context context) {
-        Intent intent = new Intent(context, TagActivity.class);
-        intent.putExtra(TagActivity.KEY_WHEN, when.name());
-        startActivity(intent);
     }
 
     @Override

@@ -23,7 +23,7 @@ import com.placeholder.rich.todotreeprototype.model.When;
 
 public class TagActivity extends AbstractListActivity {
 
-    public static final String KEY_WHEN = "WhenList";
+    public static final String KEY_WHEN = "com.placeholder.rich.todotreeprototype.WhenList";
 
     private TagList list;
     private When when;
@@ -71,12 +71,19 @@ public class TagActivity extends AbstractListActivity {
 
     @Override
     protected void setUpWhenHeader() {
-        backButton = (Button) findViewById(R.id.header_button_left);
         backButton.setText(R.string.nav_back_to_list);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 TagActivity.this.finish();
+            }
+        });
+
+        otherWhenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                When otherWhen = When.TODAY == when? When.TOMORROW : When.TODAY;
+                startTagActivity(otherWhen, TagActivity.this);
             }
         });
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.Menu;
@@ -61,6 +62,13 @@ public abstract class AbstractListActivity extends Activity {
     }
 
     protected void setWhenButtonBackground(Button whenButton, Item item){}
+
+    protected void startTagActivity(When when, Context context) {
+        Intent intent = new Intent(context, TagActivity.class);
+        intent.putExtra(TagActivity.KEY_WHEN, when.name());
+        startActivity(intent);
+    }
+
 
     protected void onClickTodayButton(Item item, Button button) {
         if (item.hasSubItems()) {
