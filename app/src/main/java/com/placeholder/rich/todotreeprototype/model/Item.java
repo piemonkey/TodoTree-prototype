@@ -58,6 +58,10 @@ public class Item {
         when = When.TODAY;
     }
 
+    public void doTomorrow() {
+        when = When.TOMORROW;
+    }
+
     public void dontDoNow() {
         when = When.NA;
     }

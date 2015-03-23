@@ -61,7 +61,15 @@ public abstract class AbstractListActivity extends Activity {
         listView.setAdapter(todoListAdapter);
     }
 
-    protected void setWhenButtonBackground(Button whenButton, Item item){}
+    protected void setWhenButtonBackground(Button whenButton, Item item){
+        if (item.getWhen() == When.NA) {
+            whenButton.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.ic_when_tag_inactive));
+        } else {
+            whenButton.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.ic_when_tag_active));
+        }
+    }
 
     protected void startTagActivity(When when, Context context) {
         Intent intent = new Intent(context, TagActivity.class);
@@ -70,17 +78,28 @@ public abstract class AbstractListActivity extends Activity {
     }
 
 
-    protected void onClickTodayButton(Item item, Button button) {
+    protected void onClickTodayButton(final Item item, final Button button) {
         if (item.hasSubItems()) {
             Toast.makeText(this, "Feature coming soon...", Toast.LENGTH_SHORT).show();
         } else {
-            if (item.getWhen() == When.NA) {
-                item.doToday();
-            } else {
-                item.dontDoNow();
-            }
-            listStore.save(item);
-            setWhenButtonBackground(button, item);
+            AlertDialog.Builder whenDialogBuilder = new AlertDialog.Builder(this);
+            String[] whenTexts = {"Today", "Tomorrow", "None"};
+            whenDialogBuilder.setItems(whenTexts, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    if (which == 0) {
+                        item.doToday();
+                    } else if (which == 1) {
+                        item.doTomorrow();
+                    } else {
+                        item.dontDoNow();
+                    }
+                    listStore.save(item);
+                    setWhenButtonBackground(button, item);
+                    todoListAdapter.notifyDataSetChanged();
+                }
+            });
+            whenDialogBuilder.show();
         }
     }
 

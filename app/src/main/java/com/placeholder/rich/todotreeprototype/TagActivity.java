@@ -129,8 +129,6 @@ public class TagActivity extends AbstractListActivity {
                     @Override
                     public void onClick(View view) {
                         onClickTodayButton(item, whenButton);
-                        list.deleteItem(item);
-                        todoListAdapter.notifyDataSetChanged();
                     }
                 });
 

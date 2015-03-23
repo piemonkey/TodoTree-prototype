@@ -16,6 +16,5 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_weight="0"
-        android:longClickable="true"
-        android:background="@drawable/ic_when_tag_clear"/>
+        android:longClickable="true"/>
 </LinearLayout>

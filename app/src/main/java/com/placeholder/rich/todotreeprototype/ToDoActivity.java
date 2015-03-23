@@ -248,17 +248,6 @@ public class ToDoActivity extends AbstractListActivity {
     }
 
     @Override
-    protected void setWhenButtonBackground(Button whenButton, Item item) {
-        if (item.getWhen() == When.NA) {
-            whenButton.setBackgroundDrawable(getResources().getDrawable(
-                    R.drawable.ic_when_tag_inactive));
-        } else if (item.getWhen() == When.TODAY) {
-            whenButton.setBackgroundDrawable(getResources().getDrawable(
-                    R.drawable.ic_when_tag_active));
-        }
-    }
-
-    @Override
     protected void openActivityForList(Item item, Context context) {
         Intent intent = new Intent(context, ToDoActivity.class);
         int numberOfCrumbs = listBreadcrumb.size();
