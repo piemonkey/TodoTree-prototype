@@ -126,7 +126,9 @@ public abstract class AbstractListActivity extends Activity {
                     }
                     listStore.save(item);
                     setWhenButtonBackground(button, item);
-                    todoListAdapter.notifyDataSetChanged();
+                    if (getList().updateList(item)) {
+                        todoListAdapter.notifyDataSetChanged();
+                    }
                 }
             });
             whenDialogBuilder.show();

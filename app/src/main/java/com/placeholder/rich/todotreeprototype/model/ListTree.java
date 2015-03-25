@@ -35,6 +35,7 @@ public class ListTree implements ItemList {
         return ID_ROOT.equals(id);
     }
 
+    @Override
     public List<Item> getItems() {
         return Collections.unmodifiableList(items);
     }
@@ -43,6 +44,7 @@ public class ListTree implements ItemList {
         items.add(newItem);
     }
 
+    @Override
     public void deleteItem(Item toDelete) {
         items.remove(toDelete);
     }
@@ -55,4 +57,9 @@ public class ListTree implements ItemList {
         return name;
     }
 
+    @Override
+    public boolean updateList(Item changedItem) {
+        // TODO: Implement if has use case or remove if doesn't
+        return false;
+    }
 }
