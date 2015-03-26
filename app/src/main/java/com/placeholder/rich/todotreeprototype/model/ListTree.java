@@ -2,12 +2,14 @@ package com.placeholder.rich.todotreeprototype.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 public class ListTree implements ItemList {
 
     private static final UUID ID_ROOT = new UUID(0L, 0L);
+    private static final ItemComparator ITEM_COMPARATOR = new ItemComparator();
 
     private final UUID id;
     private final String name;
@@ -21,6 +23,7 @@ public class ListTree implements ItemList {
         }
         this.id = id;
         this.items = new ArrayList<>(items);
+        Collections.sort(this.items, ITEM_COMPARATOR);
     }
 
     public static ListTree rootList(List<Item> items) {
@@ -57,9 +60,22 @@ public class ListTree implements ItemList {
         return name;
     }
 
+    public void sort() {
+        Collections.sort(items, ITEM_COMPARATOR);
+    }
+
     @Override
     public boolean updateList(Item changedItem) {
         // TODO: Implement if has use case or remove if doesn't
         return false;
     }
+
+    private static class ItemComparator implements Comparator<Item> {
+        @Override
+        public int compare(Item item1, Item item2) {
+            int doneComp = Boolean.valueOf(item1.isComplete()).compareTo(item2.isComplete());
+            return doneComp != 0 ? doneComp : item1.getName().compareTo(item2.getName());
+        }
+    }
+
 }

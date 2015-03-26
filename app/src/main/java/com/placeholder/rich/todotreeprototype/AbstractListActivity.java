@@ -156,7 +156,7 @@ public abstract class AbstractListActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.to_do, menu);
+        getMenuInflater().inflate(R.menu.list, menu);
         return true;
     }
 
