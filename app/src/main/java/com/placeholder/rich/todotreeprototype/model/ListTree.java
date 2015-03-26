@@ -73,7 +73,12 @@ public class ListTree implements ItemList {
     private static class ItemComparator implements Comparator<Item> {
         @Override
         public int compare(Item item1, Item item2) {
-            int doneComp = Boolean.valueOf(item1.isComplete()).compareTo(item2.isComplete());
+            final int doneComp;
+            if (item1.isComplete()) {
+                doneComp = item2.isComplete() ? 0 : 1;
+            } else {
+                doneComp = item2.isComplete() ? -1 : 0;
+            }
             return doneComp != 0 ? doneComp : item1.getName().compareTo(item2.getName());
         }
     }
