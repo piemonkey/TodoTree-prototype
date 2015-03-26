@@ -10,4 +10,6 @@ public interface ItemList {
 
     public boolean updateList(Item changedItem);
 
+    public void sort();
+
 }

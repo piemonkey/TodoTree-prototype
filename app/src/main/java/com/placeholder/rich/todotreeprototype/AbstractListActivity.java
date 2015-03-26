@@ -165,7 +165,11 @@ public abstract class AbstractListActivity extends Activity {
         int id = menuItem.getItemId();
         if (id == R.id.action_clear_completed) {
             showClearCompetedDialog();
+        } else if (id == R.id.action_sort) {
+            getList().sort();
+            todoListAdapter.notifyDataSetChanged();
         }
+
         return super.onOptionsItemSelected(menuItem);
     }
 

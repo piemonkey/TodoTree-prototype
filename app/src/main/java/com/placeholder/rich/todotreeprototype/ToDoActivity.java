@@ -280,22 +280,6 @@ public class ToDoActivity extends AbstractListActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.todo, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        int id = menuItem.getItemId();
-        if (id == R.id.action_sort) {
-            list.sort();
-            todoListAdapter.notifyDataSetChanged();
-        }
-        return super.onOptionsItemSelected(menuItem);
-    }
-
-    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         int numberOfCrumbs = listBreadcrumb.size();
         String[] crumbs = new String[numberOfCrumbs];

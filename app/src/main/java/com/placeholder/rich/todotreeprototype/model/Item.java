@@ -1,8 +1,12 @@
 package com.placeholder.rich.todotreeprototype.model;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 public class Item {
+
+    static final ItemComparator COMPARATOR = new ItemComparator();
+
     private final UUID id;
     private String name;
     private boolean complete;
@@ -76,6 +80,19 @@ public class Item {
 
     public boolean hasSubItems() {
         return nSubItems > 0;
+    }
+
+    private static class ItemComparator implements Comparator<Item> {
+        @Override
+        public int compare(Item item1, Item item2) {
+            final int doneComp;
+            if (item1.isComplete()) {
+                doneComp = item2.isComplete() ? 0 : 1;
+            } else {
+                doneComp = item2.isComplete() ? -1 : 0;
+            }
+            return doneComp != 0 ? doneComp : item1.getName().compareTo(item2.getName());
+        }
     }
 
 }

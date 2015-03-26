@@ -1,8 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".AbstractListActivity" >
+    <item android:id="@+id/action_sort"
+        android:title="Sort"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
     <item android:id="@+id/action_clear_completed"
         android:title="Clear completed"
-        android:orderInCategory="100"
+        android:orderInCategory="101"
         android:showAsAction="never" />
 </menu>

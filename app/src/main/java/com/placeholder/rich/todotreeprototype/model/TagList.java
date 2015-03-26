@@ -12,6 +12,7 @@ public class TagList implements ItemList {
     public TagList(When tag, List<Item> items) {
         this.tag = tag;
         this.items = new ArrayList<>(items);
+        Collections.sort(this.items, Item.COMPARATOR);
     }
 
     public When getTag() {
@@ -47,4 +48,10 @@ public class TagList implements ItemList {
 
         return changeMade;
     }
+
+    @Override
+    public void sort() {
+        Collections.sort(this.items, Item.COMPARATOR);
+    }
+
 }
